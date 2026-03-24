@@ -8,12 +8,24 @@ public class MainFrame extends JFrame {
     CardLayout cardLayout;
     JPanel mainPanel;
     String user;
+    Image backgroundImage;
+    Image logoImage;
+
 
     public MainFrame() {
+
         setTitle("IPOS CA");
         setSize(800, 500);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+
+        try{
+            backgroundImage = new ImageIcon("src/resources/gradient.png").getImage();
+            logoImage = new ImageIcon("src/resources/logo.png").getImage();
+        }
+        catch(Exception e){
+            System.out.println("fogor toload them image due");
+        }
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
@@ -28,6 +40,8 @@ public class MainFrame extends JFrame {
         //what page to show right now
         cardLayout.show(mainPanel, "login");
 
+
+
         setVisible(true);
     }
 
@@ -41,6 +55,8 @@ public class MainFrame extends JFrame {
     public void logout(){
         mainPanel.removeAll();
         mainPanel.add(new LoginPage(this), "login");
+        mainPanel.revalidate();
+        mainPanel.repaint();
     }
 
 
@@ -53,8 +69,17 @@ public class MainFrame extends JFrame {
     public void setUser(String user){
         this.user = user;
     }
+
     public String getUser(){
         return user;
+    }
+
+    public Image getBackgroundImage() {
+        return backgroundImage;
+    }
+
+    public Image getLogoImage(){
+        return logoImage;
     }
 
 }

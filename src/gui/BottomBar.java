@@ -15,6 +15,7 @@ public class BottomBar extends JPanel {
         logoutButton = new JButton("Logout");
 
         setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
         add(loggedInLabel, BorderLayout.WEST);
         add(logoutButton, BorderLayout.EAST);
 
@@ -22,6 +23,8 @@ public class BottomBar extends JPanel {
             mainFrame.logout();
         });
     }
+
+
 
     public JButton getLogoutButton() {
         return logoutButton;

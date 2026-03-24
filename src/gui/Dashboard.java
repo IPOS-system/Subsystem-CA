@@ -4,30 +4,28 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Dashboard extends JPanel {
+    Image backgroundImage;
 
     public Dashboard(MainFrame mainFrame) {
 
         setLayout(new BorderLayout());
 
-        //top region
-        JPanel topPanel = new JPanel(null);
-        topPanel.setPreferredSize(new Dimension(0, 80));
+        backgroundImage =mainFrame.getBackgroundImage();
 
-        JLabel logoLabel = new JLabel("LOGO");
-        logoLabel.setBounds(330, 20, 200, 40);
-        logoLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        add(new HeaderPanel(mainFrame), BorderLayout.NORTH);
 
-        topPanel.add(logoLabel);
-        add(topPanel, BorderLayout.NORTH);
 
         //center 3 region
         JPanel mainPanel = new JPanel(new GridLayout(1, 3, 10, 10));
+        mainPanel.setOpaque(false);
 
         //management area
         JPanel managementPanel = new JPanel(new BorderLayout());
-        managementPanel.setBorder(BorderFactory.createTitledBorder("Management"));
+        managementPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Management"));
+        managementPanel.setOpaque(false);
 
         JPanel managementButtons = new JPanel(new GridLayout(4, 1, 5, 5));
+        managementButtons.setOpaque(false);
 
         JButton ordersBtn = new JButton("Orders");
         managementButtons.add(ordersBtn);
@@ -45,7 +43,8 @@ public class Dashboard extends JPanel {
 
         //sales floor
         JPanel salesPanel = new JPanel(new BorderLayout());
-        salesPanel.setBorder(BorderFactory.createTitledBorder("Sales Floor"));
+        salesPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Sales floor"));
+        salesPanel.setOpaque(false);
 
         JPanel salesButtons = new JPanel(new GridLayout(1, 1));
         JButton salesBtn = new JButton("Sales");
@@ -55,7 +54,8 @@ public class Dashboard extends JPanel {
 
         //administrative area
         JPanel adminPanel = new JPanel(new BorderLayout());
-        adminPanel.setBorder(BorderFactory.createTitledBorder("Admin"));
+        adminPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Administrative"));
+        adminPanel.setOpaque(false);
 
         JPanel adminButtons = new JPanel(new GridLayout(1, 1));
         adminButtons.add(new JButton("Templates"));
@@ -72,29 +72,23 @@ public class Dashboard extends JPanel {
         //bottom region
 
         JPanel bottomPanel = new JPanel(new BorderLayout());
-
-        BottomBar bottomBar = new BottomBar(mainFrame);
-        bottomPanel.add(bottomBar);
-
         add(bottomPanel, BorderLayout.SOUTH);
+        bottomPanel.setOpaque(false);
+
 
         //alerts an empty j panel to have fun with/
 
         JPanel alertsPanel = new JPanel(new BorderLayout());
-        alertsPanel.setBorder(BorderFactory.createTitledBorder("Alerts"));
+        alertsPanel.setBorder(
+                BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Alerts"));
+        alertsPanel.setOpaque(false);
         alertsPanel.setLayout(new BorderLayout());
         alertsPanel.setPreferredSize(new Dimension(0, 120));
         bottomPanel.add(alertsPanel, BorderLayout.NORTH);
 
         //status bar at the bottom "who is logged in" and logout.
+        bottomPanel.add(new BottomBar(mainFrame));
 
-        JPanel statusBar = new JPanel(new BorderLayout());
-        statusBar.setPreferredSize(new Dimension(0, 30));
-
-        //who is logged in label
-
-        JLabel userLabel = new JLabel("Logged in as: admin");
-        statusBar.add(userLabel, BorderLayout.WEST);
 
         //navigation
 
@@ -118,11 +112,16 @@ public class Dashboard extends JPanel {
         });
 
 
-        bottomBar.getLogoutButton().addActionListener(e -> {
-            mainFrame.showPage("login");
-        });
+
 
 
 
     }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+    }
+
 }

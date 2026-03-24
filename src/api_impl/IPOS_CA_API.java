@@ -1,4 +1,11 @@
-package IPOS_CA_DetailedModel;
+package api_impl;
+
+import api.ICatalogueAPI;
+import api.ISoldStockAPI;
+import domain.Product;
+import domain.orderItems;
+
+import java.util.List;
 
 public class IPOS_CA_API implements ISoldStockAPI, ICatalogueAPI {
 
@@ -7,7 +14,7 @@ public class IPOS_CA_API implements ISoldStockAPI, ICatalogueAPI {
 		throw new UnsupportedOperationException();
 	}
 
-	public List<Products> listProducts() {
+	public List<Product> listProducts() {
 		// TODO - implement IPOS_CA_API.listProducts
 		throw new UnsupportedOperationException();
 	}
@@ -16,7 +23,7 @@ public class IPOS_CA_API implements ISoldStockAPI, ICatalogueAPI {
 	 * 
 	 * @param keyword
 	 */
-	public List<Products> searchProducts(string keyword) {
+	public List<Product> searchProducts(String keyword) {
 		// TODO - implement IPOS_CA_API.searchProducts
 		throw new UnsupportedOperationException();
 	}
@@ -25,7 +32,7 @@ public class IPOS_CA_API implements ISoldStockAPI, ICatalogueAPI {
 	 * 
 	 * @param productID
 	 */
-	public Product getProductDetails(string productID) {
+	public Product getProductDetails(String productID) {
 		// TODO - implement IPOS_CA_API.getProductDetails
 		throw new UnsupportedOperationException();
 	}
@@ -35,7 +42,7 @@ public class IPOS_CA_API implements ISoldStockAPI, ICatalogueAPI {
 	 * @param items
 	 * @param orderID
 	 */
-	public boolean deductStock(List<orderItems> items, string orderID) {
+	public boolean deductStock(List<orderItems> items, String orderID) {
 		// TODO - implement IPOS_CA_API.deductStock
 		throw new UnsupportedOperationException();
 	}
@@ -45,7 +52,7 @@ public class IPOS_CA_API implements ISoldStockAPI, ICatalogueAPI {
 	 * @param productID
 	 * @param qty
 	 */
-	public boolean checkStock(string productID, int qty) {
+	public boolean checkStock(String productID, int qty) {
 		// TODO - implement IPOS_CA_API.checkStock
 		throw new UnsupportedOperationException();
 	}

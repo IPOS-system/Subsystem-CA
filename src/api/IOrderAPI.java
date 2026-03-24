@@ -1,3 +1,9 @@
+package api;
+
+import domain.Product;
+
+import java.util.List;
+
 public interface IOrderAPI {
 
 	/**
@@ -11,13 +17,13 @@ public interface IOrderAPI {
 	 * @param productID
 	 * @param quantity
 	 */
-	void removeStock(string productID, int quantity);
+	void removeStock(String productID, int quantity);
 
 	/**
 	 * 
 	 * @param userID
 	 * @param orderID
 	 */
-	void updateOrderHistory(int userID, string orderID);
+	void updateOrderHistory(int userID, String orderID);
 
 }

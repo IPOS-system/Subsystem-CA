@@ -1,3 +1,7 @@
+package api;
+
+import domain.Email;
+
 public interface IEmailAPI {
 
 	/**

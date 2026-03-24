@@ -1,3 +1,8 @@
+package api;
+
+import domain.Payment;
+import domain.PaymentResult;
+
 public interface IPaymentAPI {
 
 	/**

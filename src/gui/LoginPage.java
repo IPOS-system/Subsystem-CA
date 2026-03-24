@@ -1,6 +1,7 @@
 package gui;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 
 public class LoginPage extends JPanel {
     private Image backgroundImage;
@@ -57,7 +58,20 @@ public class LoginPage extends JPanel {
 
         //add password logic here
         loginBtn.addActionListener(e -> {
-            mainFrame.setUser(userField.getText());
+            // get entered info
+            String entered_username = userField.getText();
+            char[] entered_password = passField.getPassword();
+
+            // validation
+            if (userField.getText().isEmpty()) {
+                return; // username was not entered
+            }
+            else if (entered_password.length == 0) {
+                return; // password was not entered
+            }
+
+            // set displayed account username and finish logging in
+            mainFrame.setUser(entered_username);
             mainFrame.login();
         });
     }

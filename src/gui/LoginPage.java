@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 public class LoginPage extends JPanel {
     private Image backgroundImage;
-
+    private JButton loginBtn;
 
     public LoginPage(MainFrame mainFrame, LoginService loginService) {
 
@@ -26,7 +26,7 @@ public class LoginPage extends JPanel {
 
         JTextField userField = new JTextField();
         JPasswordField passField = new JPasswordField();
-        JButton loginBtn = new JButton("Login");
+        loginBtn = new JButton("Login");
         JPanel form = new JPanel(new BorderLayout(10, 10));
         form.setPreferredSize(new Dimension(320, 180));
         form.setBackground(Color.WHITE);
@@ -80,6 +80,11 @@ public class LoginPage extends JPanel {
 
         });
     }
+
+    public JButton getLoginBtn() {
+        return loginBtn;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

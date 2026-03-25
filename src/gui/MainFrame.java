@@ -61,7 +61,9 @@ public class MainFrame extends JFrame {
 
     public void logout(){
         mainPanel.removeAll();
-        mainPanel.add(new LoginPage(this, loginService), "login");
+        LoginPage loginPage = new LoginPage(this, loginService);
+        mainPanel.add(loginPage, "login");
+        getRootPane().setDefaultButton(loginPage.getLoginBtn()); // makes it so u can press the log in button by pressing enter
         mainPanel.revalidate();
         mainPanel.repaint();
     }

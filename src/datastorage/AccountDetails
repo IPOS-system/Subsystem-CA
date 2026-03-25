@@ -1,1 +1,11 @@
-admin,admin
+the format for an account is
+username,password,role
+when logging in and reading this file, everything above the word "start" is ignored
+
+
+
+
+============================================================================================
+start
+admin,admin,admin
+humayun,123,manager

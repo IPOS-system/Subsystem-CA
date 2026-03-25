@@ -1,4 +1,6 @@
 package gui;
+import service.LoginService;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -10,9 +12,12 @@ public class MainFrame extends JFrame {
     String user;
     Image backgroundImage;
     Image logoImage;
+    LoginService loginService;
 
+    public MainFrame(LoginService loginService) {
 
-    public MainFrame() {
+        //login service
+        this.loginService = loginService;
 
         setTitle("IPOS CA");
         setSize(800, 500);
@@ -24,14 +29,14 @@ public class MainFrame extends JFrame {
             logoImage = new ImageIcon("src/resources/logo.png").getImage();
         }
         catch(Exception e){
-            System.out.println("fogor toload them image due");
+            System.out.println("no image load");
         }
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
         //add j panels
-        mainPanel.add(new LoginPage(this), "login");
+        mainPanel.add(new LoginPage(this, loginService), "login");
 
        // mainPanel.add(new DashboardHome(this), "dashboard");
 
@@ -54,7 +59,7 @@ public class MainFrame extends JFrame {
 
     public void logout(){
         mainPanel.removeAll();
-        mainPanel.add(new LoginPage(this), "login");
+        mainPanel.add(new LoginPage(this, loginService), "login");
         mainPanel.revalidate();
         mainPanel.repaint();
     }

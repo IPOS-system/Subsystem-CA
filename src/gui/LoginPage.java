@@ -23,6 +23,8 @@ public class LoginPage extends JPanel {
 
         JTextField userField = new JTextField();
         JPasswordField passField = new JPasswordField();
+
+
         loginBtn = new JButton("Login");
         JPanel form = new JPanel(new BorderLayout(10, 10));
         form.setPreferredSize(new Dimension(320, 180));

@@ -7,38 +7,33 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-//TODO add things like getallusers, createuser, updaterole, deleteuser. for CUST package marking. please keep authentication logic as is using findbyusername. m
-//TODO make sure people cant create 2 users with same name. make sure admins cant delete themselves.
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDAO {
 
+    //used by login
     public User findByUsername(String username) {
         String sql = "SELECT * FROM LocalUser WHERE username = ?";
-        //query
 
-        try (
-                Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, username);
-
             ResultSet rs = stmt.executeQuery();
 
-            if (rs.next()) {
-                //create new user object to pass back to loginservice
-                return new User(
-                        rs.getInt("user_id"),
-                        rs.getString("username"),
-                        rs.getString("password"),
-                        rs.getString("role")
-                );
+            if (!rs.next()) {
+                return null;
             }
+            return new User(
+                    rs.getInt("user_id"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getString("role")
+            );
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("//error finding user by username: " + e.getMessage());
+            return null;
         }
-
-        return null;
     }
 }

@@ -1,13 +1,15 @@
 package gui;
 
+import service.AppController;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class UsersPage extends JPanel {
-    public UsersPage(MainFrame mainFrame) {
+    public UsersPage(AppController appController) {
 
         setLayout(new BorderLayout());
-        add(new HeaderPanel(mainFrame), BorderLayout.NORTH);
-        add(new BottomPanel(mainFrame), BorderLayout.SOUTH);
+        add(new HeaderPanel(appController), BorderLayout.NORTH);
+        add(new BottomPanel(appController), BorderLayout.SOUTH);
     }
 }

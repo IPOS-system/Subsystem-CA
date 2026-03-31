@@ -1,19 +1,21 @@
 package gui;
 
+import service.AppController;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class Dashboard extends JPanel {
     Image backgroundImage;
 
-    public Dashboard(MainFrame mainFrame) {
+    public Dashboard(AppController appController) {
 
         setLayout(new BorderLayout());
 
-        backgroundImage = mainFrame.getBackgroundImage();
+        backgroundImage = appController.getBackground();
 
-        add(new HeaderPanel(mainFrame), BorderLayout.NORTH);
-        add(new BottomPanel(mainFrame), BorderLayout.SOUTH);
+        add(new HeaderPanel(appController), BorderLayout.NORTH);
+        add(new BottomPanel(appController), BorderLayout.SOUTH);
 
         // Main panel used for dashboard
         JPanel mainPanel = new JPanel(new GridLayout(1, 3, 10, 10));
@@ -77,7 +79,7 @@ public class Dashboard extends JPanel {
         // Local bottom panel to host alerts panel
         JPanel bottomPanel = new JPanel(new BorderLayout());
         add(bottomPanel, BorderLayout.SOUTH);
-        bottomPanel.add(new BottomPanel(mainFrame));
+        bottomPanel.add(new BottomPanel(appController));
         bottomPanel.setOpaque(false);
 
         // Alerts Area to show important alerts and information
@@ -91,31 +93,31 @@ public class Dashboard extends JPanel {
 
         //Bind panels to buttons
         ordersButton.addActionListener(e -> {
-            mainFrame.showPage("orders");
+            appController.showPage("orders");
         });
 
         customersButton.addActionListener(e -> {
-            mainFrame.showPage("customers");
+            appController.showPage("customers");
         });
 
         stockButton.addActionListener(e -> {
-            mainFrame.showPage("stock");
+            appController.showPage("stock");
         });
 
         salesButton.addActionListener(e -> {
-            mainFrame.showPage("sales");
+            appController.showPage("sales");
         });
 
         templatesButton.addActionListener(e -> {
-            mainFrame.showPage("templates");
+            appController.showPage("templates");
         });
 
         reportsButton.addActionListener(e -> {
-            mainFrame.showPage("reports");
+            appController.showPage("reports");
         });
 
         usersButton.addActionListener(e -> {
-            mainFrame.showPage("users");
+            appController.showPage("users");
         });
     }
 

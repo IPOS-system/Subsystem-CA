@@ -1,53 +1,42 @@
 package service;
 
-import datastorage.User;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import DataAccessObjects.UserDAO;
+import domain.User;
 
 public class LoginService {
     private User loggedInUser;
+    private final UserDAO userDAO;
 
-    public LoginService() {}
+    public LoginService() {
+        //make dao object
+        this.userDAO = new UserDAO();
+    }
 
-    public boolean authenticate(String entered_username, String entered_password){
-        try {
-            FileReader fr = new FileReader("src/datastorage/AccountDetails");
-            BufferedReader br = new BufferedReader(fr);
-            String line;
-            boolean foundstart = false;
-            while ((line = br.readLine()) != null) { // Search each line in the database for the account
-                if (!foundstart) {
-                    if (line.equals("start")) {
-                        foundstart = true;
-                    } else {
-                        continue;
-                    }
-                }
+    public boolean authenticate(String entered_username, String entered_password) {
+        //find user by username
+        //creates a user object, if this returns false GC just trashes it.
+        //else it stores it, passes it back to mainframe to maintain logged in user.
+        User user = userDAO.findByUsername(entered_username);
 
-                String[] parts = line.split(","); // split the string at the commas
-
-                if (parts.length == 3) {
-                    String username_to_check = parts[0]; // Username
-                    String password_to_check = parts[1]; // Password
-
-                    if (username_to_check.equals(entered_username) && password_to_check.equals(entered_password)) { // Validate username and password
-                        String role_of_user = parts[2];
-                        loggedInUser = new User(entered_username, role_of_user);
-                        return true; // Matching account found
-                    }
-                }
-            }
-        }
-        catch (IOException exception){
-            System.out.println("Error reading file");
+        //if user does not exist, fail login
+        if (user == null) {
+            return false;
         }
 
-        return false; // No matching account found
+        //check password
+        if (user.getPassword().equals(entered_password)) {
+            //save logged in user
+            loggedInUser = user;
+            return true;
+        }
+
+        //wrong password
+
+        return false;
     }
 
     public User getLoggedInUser() {
+        //return current user
         return loggedInUser;
     }
 }

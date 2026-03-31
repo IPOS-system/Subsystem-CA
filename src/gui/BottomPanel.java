@@ -1,5 +1,7 @@
 package gui;
 
+import service.AppController;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -9,12 +11,13 @@ public class BottomPanel extends JPanel {
     private JButton dashboardButton;
     private JPanel rightPanel;
 
-    public BottomPanel(MainFrame mainFrame) {
+    public BottomPanel(AppController appController) {
         setLayout(new BorderLayout(10, 10));
         setPreferredSize(new Dimension(0, 40));
         setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-        loggedInLabel = new JLabel("Logged in as: " + mainFrame.getUser().getUsername());
+        String username = appController.getCurrentUser().getUsername();
+        loggedInLabel = new JLabel("Logged in as: " + username);
 
         dashboardButton = new JButton("Dashboard");
         logoutButton = new JButton("Logout");
@@ -27,11 +30,11 @@ public class BottomPanel extends JPanel {
         add(rightPanel, BorderLayout.EAST);
 
         dashboardButton.addActionListener(e -> {
-            mainFrame.showPage("dashboard");
+            appController.showPage("dashboard");
         });
 
         logoutButton.addActionListener(e -> {
-            mainFrame.logout();
+            appController.handleLogout();
         });
     }
 }

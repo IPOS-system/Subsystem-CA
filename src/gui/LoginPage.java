@@ -1,18 +1,21 @@
 package gui;
+import service.AppController;
 import service.LoginService;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class LoginPage extends JPanel {
-    private final ImageIcon logoIcon;
+    private  ImageIcon logoIcon;
     private Image backgroundImage;
     private JButton loginBtn;
 
-    public LoginPage(MainFrame mainFrame, LoginService loginService) {
+    public LoginPage(AppController appController, LoginService loginService) {
+        //sorry broke logos and background, need to pass it from somewhere thats not mainframe
+
         setLayout(new BorderLayout());
 
-        backgroundImage = mainFrame.getBackgroundImage();
+        backgroundImage = appController.getBackground();
 
         // Outer container to handle positioning
         JPanel outer = new JPanel(new GridBagLayout());
@@ -30,7 +33,7 @@ public class LoginPage extends JPanel {
                 BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
 
-        logoIcon = new ImageIcon(mainFrame.getLogoImage().getScaledInstance(150, 50, Image.SCALE_SMOOTH));
+        logoIcon = new ImageIcon(appController.getLogo().getScaledInstance(150, 50, Image.SCALE_SMOOTH));
         JLabel logoLabel = new JLabel(logoIcon);
         logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -44,7 +47,7 @@ public class LoginPage extends JPanel {
         fields.add(new JLabel());
         fields.add(loginBtn);
 
-        form.add(logoLabel, BorderLayout.NORTH);
+        //form.add(logoLabel, BorderLayout.NORTH);
         form.add(fields, BorderLayout.CENTER);
 
         outer.add(form); // Add to outer container
@@ -59,9 +62,9 @@ public class LoginPage extends JPanel {
             String entered_password = new String(passField.getPassword());
 
             if (loginService.authenticate(entered_username, entered_password)){
-                mainFrame.login(loginService.getLoggedInUser());
+                appController.handleLogin(loginService.getLoggedInUser());
             } else{
-                JOptionPane.showMessageDialog(mainFrame, "Incorrect username or password");
+                JOptionPane.showMessageDialog(this, "Incorrect username or password");
             }
         });
     }

@@ -2,6 +2,8 @@ Account Details Format:
 username,password,role
 
 when logging in and reading this file, everything above the word "start" is ignored
+
+we will make this a table in db so will remove later. -g
 ====================================================================================
 
 start

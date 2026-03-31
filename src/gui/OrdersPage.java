@@ -6,10 +6,10 @@ import java.awt.*;
 
 public class OrdersPage extends JPanel {
 
-    public OrdersPage(MainFrame mainframe) {
-        setLayout(new BorderLayout());
-        add(new HeaderPanel(mainframe), BorderLayout.NORTH);
+    public OrdersPage(MainFrame mainFrame) {
 
-        add(new BottomBar(mainframe), BorderLayout.SOUTH);
+        setLayout(new BorderLayout());
+        add(new HeaderPanel(mainFrame), BorderLayout.NORTH);
+        add(new BottomPanel(mainFrame), BorderLayout.SOUTH);
     }
 }

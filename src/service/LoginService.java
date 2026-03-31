@@ -7,9 +7,10 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class LoginService {
-    private User LoggedinUser;
+    private User loggedInUser;
 
     public LoginService() {}
+
     public boolean authenticate(String entered_username, String entered_password){
         try {
             FileReader fr = new FileReader("src/datastorage/AccountDetails");
@@ -24,15 +25,16 @@ public class LoginService {
                         continue;
                     }
                 }
+
                 String[] parts = line.split(","); // split the string at the commas
 
-                if (parts.length >= 2) {
+                if (parts.length == 3) {
                     String username_to_check = parts[0]; // Username
                     String password_to_check = parts[1]; // Password
 
                     if (username_to_check.equals(entered_username) && password_to_check.equals(entered_password)) { // Validate username and password
                         String role_of_user = parts[2];
-                        LoggedinUser = new User(entered_username, role_of_user);
+                        loggedInUser = new User(entered_username, role_of_user);
                         return true; // Matching account found
                     }
                 }
@@ -41,10 +43,11 @@ public class LoginService {
         catch (IOException exception){
             System.out.println("Error reading file");
         }
+
         return false; // No matching account found
     }
-    public User getLoggedinUser() {
-        return LoggedinUser;
-    }
 
+    public User getLoggedInUser() {
+        return loggedInUser;
+    }
 }

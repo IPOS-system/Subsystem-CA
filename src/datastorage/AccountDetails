@@ -1,8 +1,9 @@
 Account Details Format:
 username,password,role
 
-when logging in and reading this file, everything above the word "start" is ignored
-====================================================================================
+A user must only have these 3 details for a valid login.
+All information above the word 'start' is ignored.
+========================================================
 
 start
 pharmacist,pharmacist,pharmacist

@@ -1,4 +1,5 @@
 package gui;
+import datastorage.User;
 import service.LoginService;
 
 import javax.swing.*;
@@ -9,7 +10,7 @@ public class MainFrame extends JFrame {
 
     CardLayout cardLayout;
     JPanel mainPanel;
-    String user;
+    User user;
     Image backgroundImage;
     Image logoImage;
     LoginService loginService;
@@ -34,9 +35,6 @@ public class MainFrame extends JFrame {
         add(mainPanel);
         mainPanel.add(loginPage, "login");
 
-        addPages(mainPanel);
-
-
         // Show login screen upon start
         getRootPane().setDefaultButton(loginPage.getLoginBtn()); // Login by pressing Enter
         cardLayout.show(mainPanel, "login");
@@ -49,7 +47,8 @@ public class MainFrame extends JFrame {
     }
 
     // Create panels and show dashboard upon login
-    public void login(){
+    public void login(User loggedInUser){
+        user = loggedInUser;
         addPages(mainPanel);
         cardLayout.show(mainPanel, "dashboard");
     }
@@ -89,11 +88,7 @@ public class MainFrame extends JFrame {
         cardLayout.show(mainPanel, name);
     }
 
-    public void setUser(String user){
-        this.user = user;
-    }
-
-    public String getUser(){
+    public User getUser(){
         return user;
     }
 

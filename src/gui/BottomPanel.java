@@ -14,7 +14,7 @@ public class BottomPanel extends JPanel {
         setPreferredSize(new Dimension(0, 40));
         setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-        loggedInLabel = new JLabel("Logged in as: " + mainFrame.getUser());
+        loggedInLabel = new JLabel("Logged in as: " + mainFrame.getUser().getUsername());
 
         dashboardButton = new JButton("Dashboard");
         logoutButton = new JButton("Logout");

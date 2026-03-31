@@ -10,7 +10,7 @@ public class LoginPage extends JPanel {
     private Image backgroundImage;
     private JButton loginBtn;
 
-    public LoginPage(AppController appController, LoginService loginService) {
+    public LoginPage(AppController appController) {
         //sorry broke logos and background, need to pass it from somewhere thats not mainframe
 
         setLayout(new BorderLayout());
@@ -47,7 +47,7 @@ public class LoginPage extends JPanel {
         fields.add(new JLabel());
         fields.add(loginBtn);
 
-        //form.add(logoLabel, BorderLayout.NORTH);
+        form.add(logoLabel, BorderLayout.NORTH);
         form.add(fields, BorderLayout.CENTER);
 
         outer.add(form); // Add to outer container
@@ -61,10 +61,9 @@ public class LoginPage extends JPanel {
             String entered_username = userField.getText();
             String entered_password = new String(passField.getPassword());
 
-            if (loginService.authenticate(entered_username, entered_password)){
-                appController.handleLogin(loginService.getLoggedInUser());
-            } else{
-                JOptionPane.showMessageDialog(this, "Incorrect username or password");
+            //try login, if fails show messgage. if succeed, appcontroller will handle login.
+            if (!(appController.authenticateUser(entered_username, entered_password))){
+               JOptionPane.showMessageDialog(this, "Incorrect username or password");
             }
         });
     }

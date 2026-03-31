@@ -1,10 +1,9 @@
 package service;
 
-import DataAccessObjects.UserDAO;
+import dao.UserDAO;
 import domain.User;
 
 public class LoginService {
-    private User loggedInUser;
     private final UserDAO userDAO;
 
     public LoginService() {
@@ -12,7 +11,7 @@ public class LoginService {
         this.userDAO = new UserDAO();
     }
 
-    public boolean authenticate(String entered_username, String entered_password) {
+    public User authenticate(String entered_username, String entered_password) {
         //find user by username
         //creates a user object, if this returns false GC just trashes it.
         //else it stores it, passes it back to mainframe to maintain logged in user.
@@ -20,23 +19,19 @@ public class LoginService {
 
         //if user does not exist, fail login
         if (user == null) {
-            return false;
+            return null;
         }
 
         //check password
+        //TODO if password is ever null -> nullpointer exception.
         if (user.getPassword().equals(entered_password)) {
             //save logged in user
-            loggedInUser = user;
-            return true;
+            return user;
         }
 
         //wrong password
 
-        return false;
+        return null;
     }
 
-    public User getLoggedInUser() {
-        //return current user
-        return loggedInUser;
-    }
 }

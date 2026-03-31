@@ -24,7 +24,16 @@ public class AppController {
         showLoginPage();
     }
 
-    public void handleLogin(User user) {
+    public boolean authenticateUser(String username, String password){
+        User userAuthOutcome = loginService.authenticate(username, password);
+        if(userAuthOutcome != null){
+            login(userAuthOutcome);
+            return true;
+        }
+        return false;
+    }
+
+    public void login(User user) {
         session.setCurrentUser(user);
 
         mainFrame.clearPages();
@@ -32,7 +41,7 @@ public class AppController {
         mainFrame.showPage("dashboard");
     }
 
-    public void handleLogout() {
+    public void logout() {
         session.logout();
         showLoginPage();
     }
@@ -48,7 +57,7 @@ public class AppController {
     private void showLoginPage() {
         mainFrame.clearPages();
 
-        LoginPage loginPage = new LoginPage(this, loginService);
+        LoginPage loginPage = new LoginPage(this);
         mainFrame.addPage("login", loginPage);
         mainFrame.setEnterButton(loginPage.getLoginBtn());
         mainFrame.showPage("login");

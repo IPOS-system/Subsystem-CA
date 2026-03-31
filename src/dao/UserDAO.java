@@ -1,4 +1,4 @@
-package DataAccessObjects;
+package dao;
 
 import domain.User;
 import api_impl.DatabaseConnection;
@@ -7,6 +7,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+//TODO add things like getallusers, createuser, updaterole, deleteuser. for CUST package marking. please keep authentication logic as is using findbyusername. m
+//TODO make sure people cant create 2 users with same name. make sure admins cant delete themselves.
 
 public class UserDAO {
 

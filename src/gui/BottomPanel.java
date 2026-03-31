@@ -16,6 +16,7 @@ public class BottomPanel extends JPanel {
         setPreferredSize(new Dimension(0, 40));
         setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
+        //only run after login or crash
         String username = appController.getCurrentUser().getUsername();
         loggedInLabel = new JLabel("Logged in as: " + username);
 
@@ -34,7 +35,7 @@ public class BottomPanel extends JPanel {
         });
 
         logoutButton.addActionListener(e -> {
-            appController.handleLogout();
+            appController.logout();
         });
     }
 }

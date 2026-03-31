@@ -15,7 +15,7 @@ public class Dashboard extends JPanel {
         backgroundImage = appController.getBackground();
 
         add(new HeaderPanel(appController), BorderLayout.NORTH);
-        add(new BottomPanel(appController), BorderLayout.SOUTH);
+       // add(new BottomPanel(appController), BorderLayout.SOUTH);
 
         // Main panel used for dashboard
         JPanel mainPanel = new JPanel(new GridLayout(1, 3, 10, 10));
@@ -124,7 +124,9 @@ public class Dashboard extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        if(backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        }
     }
 
 }

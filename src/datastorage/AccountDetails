@@ -1,11 +1,10 @@
-the format for an account is
+Account Details Format:
 username,password,role
+
 when logging in and reading this file, everything above the word "start" is ignored
+====================================================================================
 
-
-
-
-============================================================================================
 start
+pharmacist,pharmacist,pharmacist
+manager,manager,manager
 admin,admin,admin
-humayun,123,manager

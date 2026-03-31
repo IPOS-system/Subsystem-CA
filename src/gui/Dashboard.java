@@ -10,74 +10,77 @@ public class Dashboard extends JPanel {
 
         setLayout(new BorderLayout());
 
-        backgroundImage =mainFrame.getBackgroundImage();
+        backgroundImage = mainFrame.getBackgroundImage();
 
         add(new HeaderPanel(mainFrame), BorderLayout.NORTH);
+        add(new BottomPanel(mainFrame), BorderLayout.SOUTH);
 
-
-        //center 3 region
+        // Main panel used for dashboard
         JPanel mainPanel = new JPanel(new GridLayout(1, 3, 10, 10));
         mainPanel.setOpaque(false);
 
-        //management area
-        JPanel managementPanel = new JPanel(new BorderLayout());
-        managementPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Management"));
-        managementPanel.setOpaque(false);
+        // Pharmacist Area
+        JPanel pharmacistPanel = new JPanel(new BorderLayout());
+        pharmacistPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Pharmacist"));
+        pharmacistPanel.setOpaque(false);
 
-        JPanel managementButtons = new JPanel(new GridLayout(4, 1, 5, 5));
-        managementButtons.setOpaque(false);
+        JPanel pharmacistButtons = new JPanel(new GridLayout(4, 1, 5, 5));
+        pharmacistButtons.setOpaque(false);
 
-        JButton ordersBtn = new JButton("Orders");
-        managementButtons.add(ordersBtn);
+        JButton ordersButton = new JButton("Orders");
+        JButton customersButton = new JButton("Customers");
+        JButton stockButton = new JButton("Stock");
+        JButton salesButton = new JButton("Sales");
 
-        JButton stockBtn = new JButton("Stock");
-        managementButtons.add(stockBtn);
+        pharmacistButtons.add(ordersButton);
+        pharmacistButtons.add(customersButton);
+        pharmacistButtons.add(stockButton);
+        pharmacistButtons.add(salesButton);
 
-        JButton accountBtn = new JButton("Accounts");
-        managementButtons.add(accountBtn);
+        pharmacistPanel.add(pharmacistButtons, BorderLayout.NORTH);
 
-        JButton reportsBtn = new JButton("Reports");
-        managementButtons.add(reportsBtn);
+        // Manager Area
+        JPanel managerPanel = new JPanel(new BorderLayout());
+        managerPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Manager"));
+        managerPanel.setOpaque(false);
 
-        managementPanel.add(managementButtons, BorderLayout.NORTH);
+        JPanel managerButtons = new JPanel(new GridLayout(2, 1, 5, 5));
+        managerButtons.setOpaque(false);
 
-        //sales floor
-        JPanel salesPanel = new JPanel(new BorderLayout());
-        salesPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Sales floor"));
-        salesPanel.setOpaque(false);
+        JButton templatesButton = new JButton("Templates");
+        JButton reportsButton = new JButton("Reports");
 
-        JPanel salesButtons = new JPanel(new GridLayout(1, 1));
-        JButton salesBtn = new JButton("Sales");
-        salesButtons.add(salesBtn);
+        managerButtons.add(templatesButton);
+        managerButtons.add(reportsButton);
 
-        salesPanel.add(salesButtons, BorderLayout.NORTH);
+        managerPanel.add(managerButtons, BorderLayout.NORTH);
 
-        //administrative area
+        // Admin Area
         JPanel adminPanel = new JPanel(new BorderLayout());
-        adminPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Administrative"));
+        adminPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Administrator"));
         adminPanel.setOpaque(false);
 
-        JPanel adminButtons = new JPanel(new GridLayout(1, 1));
-        adminButtons.add(new JButton("Templates"));
+        JPanel adminButtons = new JPanel(new GridLayout(1, 1, 5, 5));
+        adminButtons.setOpaque(false);
+
+        JButton usersButton = new JButton("Users");
+        adminButtons.add(usersButton);
 
         adminPanel.add(adminButtons, BorderLayout.NORTH);
 
-        //add columns
-        mainPanel.add(managementPanel);
-        mainPanel.add(salesPanel);
+        // Add columns
+        mainPanel.add(pharmacistPanel);
+        mainPanel.add(managerPanel);
         mainPanel.add(adminPanel);
-
         add(mainPanel, BorderLayout.CENTER);
 
-        //bottom region
-
+        // Local bottom panel to host alerts panel
         JPanel bottomPanel = new JPanel(new BorderLayout());
         add(bottomPanel, BorderLayout.SOUTH);
+        bottomPanel.add(new BottomPanel(mainFrame));
         bottomPanel.setOpaque(false);
 
-
-        //alerts an empty j panel to have fun with/
-
+        // Alerts Area to show important alerts and information
         JPanel alertsPanel = new JPanel(new BorderLayout());
         alertsPanel.setBorder(
                 BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Alerts"));
@@ -86,36 +89,34 @@ public class Dashboard extends JPanel {
         alertsPanel.setPreferredSize(new Dimension(0, 120));
         bottomPanel.add(alertsPanel, BorderLayout.NORTH);
 
-        //status bar at the bottom "who is logged in" and logout.
-        bottomPanel.add(new BottomBar(mainFrame));
-
-
-        //navigation
-
-        ordersBtn.addActionListener(e -> {
+        //Bind panels to buttons
+        ordersButton.addActionListener(e -> {
             mainFrame.showPage("orders");
         });
 
-        stockBtn.addActionListener(e -> {
+        customersButton.addActionListener(e -> {
+            mainFrame.showPage("customers");
+        });
+
+        stockButton.addActionListener(e -> {
             mainFrame.showPage("stock");
         });
 
-        accountBtn.addActionListener(e -> {
-            mainFrame.showPage("accounts");
-        });
-        reportsBtn.addActionListener(e -> {
-            mainFrame.showPage("reports");
-        });
-
-        salesBtn.addActionListener(e -> {
+        salesButton.addActionListener(e -> {
             mainFrame.showPage("sales");
         });
 
+        templatesButton.addActionListener(e -> {
+            mainFrame.showPage("templates");
+        });
 
+        reportsButton.addActionListener(e -> {
+            mainFrame.showPage("reports");
+        });
 
-
-
-
+        usersButton.addActionListener(e -> {
+            mainFrame.showPage("users");
+        });
     }
 
     @Override

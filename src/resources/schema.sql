@@ -1,3 +1,4 @@
+
 CREATE DATABASE IF NOT EXISTS ipos_ca;
 USE ipos_ca;
 

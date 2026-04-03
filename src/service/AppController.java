@@ -14,6 +14,9 @@ public class AppController {
     private final LoginService loginService;
     private final Session session;
 
+    private DiscountPlansPage discountPlansPage;
+    private CustomersPage customerAccountsPage;
+
     public AppController(MainFrame mainFrame, LoginService loginService, Session session) {
         this.mainFrame = mainFrame;
         this.loginService = loginService;
@@ -39,6 +42,8 @@ public class AppController {
         mainFrame.clearPages();
         addMainPages();
         mainFrame.showPage("dashboard");
+
+
     }
 
     public void logout() {
@@ -75,16 +80,33 @@ public class AppController {
         return mainFrame.getBackgroundImage();
     }
 
+    public void showDiscountPlanPage(String currentCustomerID){
+        discountPlansPage.setCurrentCustomerId(currentCustomerID);
+        showPage("discount");
+    }
+
+    public void showCustomersPageAndRefresh(){
+        if(customerAccountsPage != null){
+            customerAccountsPage.refreshTable();
+            showPage("customers");
+        }
+    }
+
 
 
     private void addMainPages() {
+        discountPlansPage = new DiscountPlansPage(this);
+        customerAccountsPage = new CustomersPage(this);
+
         mainFrame.addPage("dashboard", new Dashboard(this));
         mainFrame.addPage("orders", new OrdersPage(this));
         mainFrame.addPage("users", new UsersPage(this));
-        mainFrame.addPage("customers", new CustomersPage(this));
+        mainFrame.addPage("customers",customerAccountsPage);
         mainFrame.addPage("templates", new TemplatesPage(this));
         mainFrame.addPage("stock", new StockPage(this));
         mainFrame.addPage("sales", new SalesPage(this));
         mainFrame.addPage("reports", new ReportsPage(this));
+        mainFrame.addPage("discount", discountPlansPage);
+
     }
 }

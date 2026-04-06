@@ -2,6 +2,7 @@ package api_impl;
 
 import gui.MainFrame;
 import service.AppController;
+import service.CustomerService;
 import service.LoginService;
 import service.Session;
 
@@ -27,7 +28,8 @@ public class Main {
         LoginService loginService = new LoginService();
         Session session = new Session();
         MainFrame mainFrame = new MainFrame();
-        AppController appController = new AppController(mainFrame, loginService, session);
+        CustomerService customerService = new CustomerService();
+        AppController appController = new AppController(mainFrame, loginService, session, customerService);
         appController.start();
 
     }

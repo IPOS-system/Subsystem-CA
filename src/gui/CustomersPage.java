@@ -1,25 +1,25 @@
 package gui;
 
-import dao.CustomerAccountDAO;
+
 import domain.CustomerAccount;
 import service.AppController;
+import service.CustomerService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.math.BigDecimal;
+
 import java.util.List;
-import java.util.concurrent.RecursiveTask;
 
-//right now the customers page does way too much
-//it should be refactored into customerspage and customersservice
-//that is a big job though
-
+//this is refactored into customerspage and customerservice.
 
 public class CustomersPage extends JPanel {
 
+
+
     private final AppController appController;
-    private final CustomerAccountDAO customerDao;
+    private final CustomerService customerService;
+    //private final CustomerAccountDAO customerDao;
 
     private JTable tbl;
     private DefaultTableModel model;
@@ -40,9 +40,9 @@ public class CustomersPage extends JPanel {
     private JButton updBtn;
     private JButton discountBtn;
 
-    public CustomersPage(AppController appController) {
+    public CustomersPage(AppController appController, CustomerService customerService) {
         this.appController = appController;
-        this.customerDao = new CustomerAccountDAO();
+        this.customerService = customerService;
 
         setLayout(new BorderLayout());
 
@@ -151,7 +151,8 @@ public class CustomersPage extends JPanel {
             if (row != -1) {
                 String accountId = model.getValueAt(row, 0).toString();
 
-                CustomerAccount c = customerDao.findById(accountId);
+                //CustomerAccount c = customerDao.findById(accountId);
+                CustomerAccount c = customerService.findById(accountId);
 
                 if (c != null) {
                     accountIdTxt.setText(c.getAccountId());
@@ -168,47 +169,23 @@ public class CustomersPage extends JPanel {
             }
         });
 
+        //add customer button.
         addBtn.addActionListener(e -> {
-            String accountId = accountIdTxt.getText().trim();
-            String holderName = holderNameTxt.getText().trim();
-            String contactName = contactNameTxt.getText().trim();
-            String address = addressTxt.getText().trim();
-            String phone = phoneTxt.getText().trim();
-            String creditText = creditLimitTxt.getText().trim();
-            String status = statusDrop.getSelectedItem().toString();
+            CustomerService.Result result = customerService.createCustomerAccount(
+                    accountIdTxt.getText(),
+                    holderNameTxt.getText(),
+                    contactNameTxt.getText(),
+                    addressTxt.getText(),
+                    phoneTxt.getText(),
+                    creditLimitTxt.getText(),
+                    statusDrop.getSelectedItem().toString()
+            );
 
-            if (accountId.isEmpty() || holderName.isEmpty() || creditText.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "account id, holder name and credit limit required.");
-                return;
-            }
+            JOptionPane.showMessageDialog(this, result.getMessage());
 
-            BigDecimal creditLimit;
-
-            try {
-                creditLimit = new BigDecimal(creditText);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "credit limit must be a valid number.");
-                return;
-            }
-
-            CustomerAccount c = new CustomerAccount();
-            c.setAccountId(accountId);
-            c.setAccountHolderName(holderName);
-            c.setContactName(contactName);
-            c.setAddress(address);
-            c.setPhone(phone);
-            c.setCreditLimit(creditLimit);
-            c.setAgreedDiscountId(null); // no selector wired yet
-            c.setAccountStatus(status);
-
-            boolean ok = customerDao.createCustomerAccount(c);
-
-            if (ok) {
-                JOptionPane.showMessageDialog(this, "customer account created.");
+            if (result.isSuccess()) {
                 resetForm();
                 loadCustomersIntoTable();
-            } else {
-                JOptionPane.showMessageDialog(this, "could not create customer account.");
             }
         });
 
@@ -230,14 +207,14 @@ public class CustomersPage extends JPanel {
             );
 
             if (yesNo == JOptionPane.YES_OPTION) {
-                boolean ok = customerDao.deleteCustomerAccount(accountId);
+                CustomerService.Result result = customerService.deleteCustomerAccount(accountId);
 
-                if (ok) {
-                    JOptionPane.showMessageDialog(this, "customer account deleted.");
+                if (result.isSuccess()) {
+                    JOptionPane.showMessageDialog(this, result.getMessage());
                     resetForm();
                     loadCustomersIntoTable();
                 } else {
-                    JOptionPane.showMessageDialog(this, "could not delete customer account.");
+                    JOptionPane.showMessageDialog(this, result.getMessage());
                 }
             }
         });
@@ -245,50 +222,21 @@ public class CustomersPage extends JPanel {
         clrBtn.addActionListener(e -> resetForm());
 
         updBtn.addActionListener(e -> {
-            String accountId = accountIdTxt.getText().trim();
-            String holderName = holderNameTxt.getText().trim();
-            String contactName = contactNameTxt.getText().trim();
-            String address = addressTxt.getText().trim();
-            String phone = phoneTxt.getText().trim();
-            String creditText = creditLimitTxt.getText().trim();
-            String status = statusDrop.getSelectedItem().toString();
+            CustomerService.Result result = customerService.updateCustomerAccount( accountIdTxt.getText(),
+            holderNameTxt.getText(),
+             contactNameTxt.getText(),
+           addressTxt.getText().trim(),
+            phoneTxt.getText().trim(),
+            creditLimitTxt.getText().trim(),
+           statusDrop.getSelectedItem().toString());
 
-            if (accountId.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "select account first.");
-                return;
-            }
 
-            if (holderName.isEmpty() || creditText.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "holder name and credit limit required.");
-                return;
-            }
-
-            BigDecimal creditLimit;
-
-            try {
-                creditLimit = new BigDecimal(creditText);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "credit limit must be a valid number.");
-                return;
-            }
-
-            CustomerAccount c = new CustomerAccount();
-            c.setAccountId(accountId);
-            c.setAccountHolderName(holderName);
-            c.setContactName(contactName);
-            c.setAddress(address);
-            c.setPhone(phone);
-            c.setCreditLimit(creditLimit);
-            c.setAccountStatus(status);
-
-            boolean ok = customerDao.updateCustomerAccount(c);
-
-            if (ok) {
-                JOptionPane.showMessageDialog(this, "customer account updated.");
+            if (result.isSuccess()) {
+                JOptionPane.showMessageDialog(this, result.getMessage());
                 resetForm();
                 loadCustomersIntoTable();
             } else {
-                JOptionPane.showMessageDialog(this, "could not update customer account.");
+                JOptionPane.showMessageDialog(this, result.getMessage());
             }
         });
 
@@ -306,7 +254,7 @@ public class CustomersPage extends JPanel {
     private void loadCustomersIntoTable() {
         model.setRowCount(0);
 
-        List<CustomerAccount> allCustomers = customerDao.getAllCustomerAccounts();
+        List<CustomerAccount> allCustomers = customerService.getAllCustomerAccounts();
 
         for (CustomerAccount c : allCustomers) {
             model.addRow(new Object[]{

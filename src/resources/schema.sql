@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS Discount_Plans (
                                               plan_name VARCHAR(100) NOT NULL,
                                               plan_type VARCHAR(20) NOT NULL,
                                               fixed_rate DECIMAL(5,2),
-                                              FOREIGN KEY (account_id) REFERENCES Customers(account_id) ON DELETE CASCADE
+                                              FOREIGN KEY (account_id) REFERENCES Customers(account_id)
 );
 
 CREATE TABLE IF NOT EXISTS Discount_Tiers (
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS Monthly_Debts (
                                              status_2ndReminder VARCHAR(10),
                                              second_reminder_date DATE,
                                              FOREIGN KEY (account_id) REFERENCES Customers(account_id)
-                                         ON DELETE CASCADE
+
 );
 
 CREATE TABLE IF NOT EXISTS Sales (
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS Sales (
                                      total_amount DECIMAL(10,2) NOT NULL,
                                      payment_method VARCHAR(20) NOT NULL,
                                      debt_id INT,
-                                     FOREIGN KEY (account_id) REFERENCES Customers(account_id) ON DELETE CASCADE,
+                                     FOREIGN KEY (account_id) REFERENCES Customers(account_id),
                                      FOREIGN KEY (debt_id) REFERENCES Monthly_Debts(debt_id)
                                      ON DELETE SET NULL
 );
@@ -177,8 +177,8 @@ CREATE TABLE IF NOT EXISTS Sale_Items (
                                           quantity INT NOT NULL,
                                           sale_price DECIMAL(10,2) NOT NULL,
                                           PRIMARY KEY (sale_id, item_id),
-                                          FOREIGN KEY (sale_id) REFERENCES Sales(sale_id),
-                                          FOREIGN KEY (item_id) REFERENCES Items(item_id) ON DELETE CASCADE
+                                          FOREIGN KEY (sale_id) REFERENCES Sales(sale_id) ,
+                                          FOREIGN KEY (item_id) REFERENCES Items(item_id)
 );
 
 CREATE TABLE IF NOT EXISTS Payments (
@@ -187,5 +187,5 @@ CREATE TABLE IF NOT EXISTS Payments (
                                         payment_date DATE NOT NULL,
                                         amount DECIMAL(10,2) NOT NULL,
                                         payment_method VARCHAR(20) NOT NULL,
-                                        FOREIGN KEY (account_id) REFERENCES Customers(account_id) ON DELETE CASCADE
+                                        FOREIGN KEY (account_id) REFERENCES Customers(account_id)
 );

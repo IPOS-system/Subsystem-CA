@@ -12,7 +12,7 @@ public class DatabaseSetup {
 
     private static final String URL = "jdbc:mysql://localhost:3306/?allowMultiQueries=true";
     private static final String USER = "root";
-    private static final String PASSWORD = "Liv2game!!";
+    private static final String PASSWORD = "admin";
     //admin prev password
 
     public static void initialiseDatabase() {

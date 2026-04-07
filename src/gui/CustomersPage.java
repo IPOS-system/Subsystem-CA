@@ -4,6 +4,7 @@ package gui;
 import domain.CustomerAccount;
 import service.AppController;
 import service.CustomerService;
+import service.Result;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -171,7 +172,7 @@ public class CustomersPage extends JPanel {
 
         //add customer button.
         addBtn.addActionListener(e -> {
-            CustomerService.Result result = customerService.createCustomerAccount(
+            Result result = customerService.createCustomerAccount(
                     accountIdTxt.getText(),
                     holderNameTxt.getText(),
                     contactNameTxt.getText(),
@@ -207,7 +208,7 @@ public class CustomersPage extends JPanel {
             );
 
             if (yesNo == JOptionPane.YES_OPTION) {
-                CustomerService.Result result = customerService.deleteCustomerAccount(accountId);
+                Result result = customerService.deleteCustomerAccount(accountId);
 
                 if (result.isSuccess()) {
                     JOptionPane.showMessageDialog(this, result.getMessage());
@@ -222,7 +223,7 @@ public class CustomersPage extends JPanel {
         clrBtn.addActionListener(e -> resetForm());
 
         updBtn.addActionListener(e -> {
-            CustomerService.Result result = customerService.updateCustomerAccount( accountIdTxt.getText(),
+            Result result = customerService.updateCustomerAccount( accountIdTxt.getText(),
             holderNameTxt.getText(),
              contactNameTxt.getText(),
            addressTxt.getText().trim(),

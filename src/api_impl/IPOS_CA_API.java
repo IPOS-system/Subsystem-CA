@@ -3,7 +3,7 @@ package api_impl;
 import api.ICatalogueAPI;
 import api.ISoldStockAPI;
 import domain.Product;
-import domain.orderItems;
+import domain.SaleItem;
 
 import java.util.List;
 
@@ -42,7 +42,7 @@ public class IPOS_CA_API implements ISoldStockAPI, ICatalogueAPI {
 	 * @param items
 	 * @param orderID
 	 */
-	public boolean deductStock(List<orderItems> items, String orderID) {
+	public boolean deductStock(List<SaleItem> items, String orderID) {
 		// TODO - implement IPOS_CA_API.deductStock
 		throw new UnsupportedOperationException();
 	}

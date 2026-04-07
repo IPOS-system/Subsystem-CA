@@ -175,7 +175,6 @@ CREATE TABLE IF NOT EXISTS Sale_Items (
                                           sale_id INT NOT NULL,
                                           item_id VARCHAR(12) NOT NULL,
                                           quantity INT NOT NULL,
-                                          sale_price DECIMAL(10,2) NOT NULL,
                                           PRIMARY KEY (sale_id, item_id),
                                           FOREIGN KEY (sale_id) REFERENCES Sales(sale_id) ,
                                           FOREIGN KEY (item_id) REFERENCES Items(item_id)

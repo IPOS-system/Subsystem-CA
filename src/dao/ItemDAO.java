@@ -36,14 +36,7 @@ public class ItemDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Item i = new Item();
-                i.setItemId(rs.getString("item_id"));
-                i.setDescription(rs.getString("description"));
-                i.setPackageType(rs.getString("package_type"));
-                i.setUnit(rs.getString("unit"));
-                i.setUnitsInPack(rs.getInt("units_in_pack"));
-                i.setPackageCost(rs.getBigDecimal("package_cost"));
-                items.add(i);
+                items.add(mapRowToItem(rs));
             }
 
         } catch (SQLException e) {
@@ -52,5 +45,49 @@ public class ItemDAO {
         }
 
         return items;
+    }
+
+
+
+    public Item findById(String id) {
+        String sql = """
+                SELECT
+                    item_id,
+                    description,
+                    package_type,
+                    unit,
+                    units_in_pack,
+                    package_cost
+                FROM Items
+                WHERE item_id = ?
+                """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRowToItem(rs);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private Item mapRowToItem(ResultSet rs) throws SQLException {
+        Item i = new Item();
+        i.setItemId(rs.getString("item_id"));
+        i.setDescription(rs.getString("description"));
+        i.setPackageType(rs.getString("package_type"));
+        i.setUnit(rs.getString("unit"));
+        i.setUnitsInPack(rs.getInt("units_in_pack"));
+        i.setPackageCost(rs.getBigDecimal("package_cost"));
+        return i;
     }
 }

@@ -1,6 +1,6 @@
 package api;
 
-import domain.orderItems;
+import domain.SaleItem;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ public interface ISoldStockAPI {
 	 * @param items
 	 * @param orderID
 	 */
-	boolean deductStock(List<orderItems> items, String orderID);
+	boolean deductStock(List<SaleItem> items, String orderID);
 
 	/**
 	 * 

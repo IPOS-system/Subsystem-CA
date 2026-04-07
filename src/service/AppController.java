@@ -14,16 +14,21 @@ public class AppController {
     private final LoginService loginService;
     private final Session session;
     private final CustomerService customerService;
+    private final ItemService itemService;
+    private final SaleService saleService;
 
     private DiscountPlansPage discountPlansPage;
     private CustomersPage customerAccountsPage;
 
 
-    public AppController(MainFrame mainFrame, LoginService loginService, Session session, CustomerService customerService) {
+    public AppController(MainFrame mainFrame, LoginService loginService, Session session,
+                         CustomerService customerService, ItemService itemService, SaleService saleService) {
         this.mainFrame = mainFrame;
         this.loginService = loginService;
         this.session = session;
         this.customerService = customerService;
+        this.itemService = itemService;
+        this.saleService = saleService;
     }
 
     public void start() {
@@ -52,6 +57,8 @@ public class AppController {
         showLoginPage();
     }
 
+
+    //this shouldnt be exposed.
     public void showPage(String pageName) {
         mainFrame.showPage(pageName);
     }
@@ -69,9 +76,6 @@ public class AppController {
         mainFrame.showPage("login");
     }
 
-    public MainFrame getMainFrame(){
-        return mainFrame;
-    }
 
     public Image getLogo(){
         return mainFrame.getLogoImage();
@@ -104,10 +108,12 @@ public class AppController {
         mainFrame.addPage("users", new UsersPage(this));
         mainFrame.addPage("customers",customerAccountsPage);
         mainFrame.addPage("templates", new TemplatesPage(this));
-        mainFrame.addPage("stock", new StockPage(this));
-        mainFrame.addPage("sales", new SalesPage(this));
+        mainFrame.addPage("stock", new StockPage(this, itemService));
+        mainFrame.addPage("sales", new SalesPage(this, saleService, itemService));
         mainFrame.addPage("reports", new ReportsPage(this));
         mainFrame.addPage("discount", discountPlansPage);
 
     }
+
+
 }

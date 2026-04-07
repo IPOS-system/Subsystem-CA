@@ -1,10 +1,7 @@
 package api_impl;
 
 import gui.MainFrame;
-import service.AppController;
-import service.CustomerService;
-import service.LoginService;
-import service.Session;
+import service.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,9 +25,12 @@ public class Main {
         LoginService loginService = new LoginService();
         Session session = new Session();
         MainFrame mainFrame = new MainFrame();
+        SaleService saleService = new SaleService();
         CustomerService customerService = new CustomerService();
-        AppController appController = new AppController(mainFrame, loginService, session, customerService);
+        ItemService itemService = new ItemService();
+        AppController appController = new AppController(mainFrame, loginService, session, customerService, itemService, saleService);
         appController.start();
+
 
     }
 }

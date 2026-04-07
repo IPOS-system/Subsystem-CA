@@ -12,7 +12,8 @@ public class DatabaseSetup {
 
     private static final String URL = "jdbc:mysql://localhost:3306/?allowMultiQueries=true";
     private static final String USER = "root";
-    private static final String PASSWORD = "admin";
+    private static final String PASSWORD = "Liv2game!!";
+    //admin prev password
 
     public static void initialiseDatabase() {
         try (
@@ -21,7 +22,11 @@ public class DatabaseSetup {
         )
 
         {
-            InputStream input = DatabaseSetup.class.getClassLoader().getResourceAsStream("schema.sql");
+            System.out.println(
+                    DatabaseSetup.class.getClassLoader().getResource("resources/schema.sql")
+            );
+            InputStream input = DatabaseSetup.class.getClassLoader().getResourceAsStream("resources/schema.sql");
+
 
             if (input == null) {
                 throw new RuntimeException("schema.sql not found.. make sure resources folder is marked as resource.");

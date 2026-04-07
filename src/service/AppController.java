@@ -1,11 +1,11 @@
 package service;
 
-import api_impl.Main;
+
 import domain.User;
 import gui.*;
-import service.LoginService;
 
-import javax.swing.*;
+
+
 import java.awt.*;
 
 public class AppController {
@@ -13,14 +13,17 @@ public class AppController {
     private final MainFrame mainFrame;
     private final LoginService loginService;
     private final Session session;
+    private final CustomerService customerService;
 
     private DiscountPlansPage discountPlansPage;
     private CustomersPage customerAccountsPage;
 
-    public AppController(MainFrame mainFrame, LoginService loginService, Session session) {
+
+    public AppController(MainFrame mainFrame, LoginService loginService, Session session, CustomerService customerService) {
         this.mainFrame = mainFrame;
         this.loginService = loginService;
         this.session = session;
+        this.customerService = customerService;
     }
 
     public void start() {
@@ -42,8 +45,6 @@ public class AppController {
         mainFrame.clearPages();
         addMainPages();
         mainFrame.showPage("dashboard");
-
-
     }
 
     public void logout() {
@@ -96,7 +97,7 @@ public class AppController {
 
     private void addMainPages() {
         discountPlansPage = new DiscountPlansPage(this);
-        customerAccountsPage = new CustomersPage(this);
+        customerAccountsPage = new CustomersPage(this, customerService);
 
         mainFrame.addPage("dashboard", new Dashboard(this));
         mainFrame.addPage("orders", new OrdersPage(this));

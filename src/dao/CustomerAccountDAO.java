@@ -42,13 +42,17 @@ public class CustomerAccountDAO {
         }
     }
 
+    //this only changes their status to closed
+    //since when you delete you cant delete them
+    //or all their sales and debts will become anonymous.
     public boolean deleteCustomerAccount(String accountId) {
-        String sql = "DELETE FROM Customers WHERE account_id = ?";
+        String sql = "UPDATE Customers SET account_status = ? WHERE account_id = ?";
 
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, accountId);
+            ps.setString(1, "closed");
+            ps.setString(2, accountId);
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
@@ -74,12 +78,17 @@ public class CustomerAccountDAO {
                 FROM Customers c
                 LEFT JOIN Discount_Plans dp
                     ON dp.account_id = c.account_id
+                WHERE c.account_status = ? OR c.account_status = ? OR account_status = ?
                 ORDER BY c.account_holder_name
                 """;
 
         try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "active");
+            ps.setString(2, "suspended");
+            ps.setString(3, "in default");
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 CustomerAccount c = new CustomerAccount();

@@ -16,6 +16,7 @@ public class AppController {
     private final CustomerService customerService;
     private final ItemService itemService;
     private final SaleService saleService;
+    private final TemplateService templateService;
 
     private DiscountPlansPage discountPlansPage;
     private CustomersPage customerAccountsPage;
@@ -29,6 +30,7 @@ public class AppController {
         this.customerService = customerService;
         this.itemService = itemService;
         this.saleService = saleService;
+        this.templateService = new TemplateService();
     }
 
     public void start() {
@@ -114,6 +116,11 @@ public class AppController {
         mainFrame.addPage("discount", discountPlansPage);
 
     }
+
+    public TemplateService getTemplateService() {
+        return templateService;
+    }
+
 
 
 }

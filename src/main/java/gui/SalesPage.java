@@ -20,8 +20,8 @@ import java.util.List;
 public class SalesPage extends JPanel {
 
 
-    JComboBox<String> customerTypeCmb; // "Account holder" | "Occasional"
-    JTextField       accountIdTxt;    // enabled only for account‑holder
+    //JComboBox<String> customerTypeCmb; // "Account holder" | "Occasional"
+    //JTextField       accountIdTxt;    // enabled only for account‑holder
     JTable basketTable;       // basket
     DefaultTableModel basketModel;       // model for the basket tabl;e
     JLabel            totalLbl;        // running total
@@ -34,6 +34,8 @@ public class SalesPage extends JPanel {
 
     JTextField searchField;
     JButton searchBtn;
+    JButton clearBtn;
+
 
     //read catalog
     //private final ItemDAO itemDao = new ItemDAO();
@@ -121,9 +123,13 @@ public class SalesPage extends JPanel {
         addItemBtn    = new JButton("Add Item");
         removeItemBtn = new JButton("Remove Item");
         checkoutBtn   = new JButton("Checkout");
+        clearBtn = new JButton("clear basket");
+
         btnPanel.add(addItemBtn);
         btnPanel.add(removeItemBtn);
         btnPanel.add(checkoutBtn);
+        btnPanel.add(clearBtn);
+
 
         bottom.add(totalLbl, BorderLayout.WEST);
         bottom.add(btnPanel, BorderLayout.EAST);
@@ -157,6 +163,7 @@ public class SalesPage extends JPanel {
         addItemBtn.addActionListener(e -> onAddItem());
         removeItemBtn.addActionListener(e -> onRemoveItem());
         checkoutBtn.addActionListener(e -> onCheckout());
+        clearBtn.addActionListener(e -> onClearBtn());
     }
 
     //use this bad boy when you add/remove from basket
@@ -248,21 +255,17 @@ public class SalesPage extends JPanel {
         }
 
 
-        if (customerTypeCmb.getSelectedIndex() == 0) { // account holder
-            String acctId = accountIdTxt.getText().trim();
-            if (acctId.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "Enter the account id.", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            // TODO: call checkCreditLimit(acctId, getCurrentTotal())
-        }
 
         //payment handling, reciet, statement
         JOptionPane.showMessageDialog(this,
                 "Checkout logic not implemented yet.", "Info",
                 JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void onClearBtn(){
+        saleService.clearBasket();
+        updateBasketTable();
+        recalculateTotal();
     }
 
 

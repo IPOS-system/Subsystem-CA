@@ -1,6 +1,7 @@
 package service;
 
 
+import dao.CatalogueDAO;
 import domain.User;
 import gui.*;
 
@@ -15,7 +16,9 @@ public class AppController {
     private final Session session;
     private final CustomerService customerService;
     private final ItemService itemService;
-    private final SaleService saleService;
+    private final SaleService saleService; //use for sale s
+    private final SaleService orderService; //use for ORD
+    private final CatalogueService catalogueService;
     private final TemplateService templateService;
 
     private DiscountPlansPage discountPlansPage;
@@ -23,14 +26,18 @@ public class AppController {
 
 
     public AppController(MainFrame mainFrame, LoginService loginService, Session session,
-                         CustomerService customerService, ItemService itemService, SaleService saleService) {
+                         CustomerService customerService, ItemService itemService,
+                         SaleService saleService, SaleService orderService,
+                         TemplateService templateService, CatalogueService catalogueService) {
         this.mainFrame = mainFrame;
         this.loginService = loginService;
         this.session = session;
         this.customerService = customerService;
         this.itemService = itemService;
         this.saleService = saleService;
-        this.templateService = new TemplateService();
+        this.orderService = orderService;
+        this.catalogueService = catalogueService;
+        this.templateService = templateService;
     }
 
     public void start() {
@@ -106,7 +113,7 @@ public class AppController {
         customerAccountsPage = new CustomersPage(this, customerService);
 
         mainFrame.addPage("dashboard", new Dashboard(this));
-        mainFrame.addPage("orders", new OrdersPage(this));
+        mainFrame.addPage("orders", new OrdersPage(this, orderService, catalogueService));
         mainFrame.addPage("users", new UsersPage(this));
         mainFrame.addPage("customers",customerAccountsPage);
         mainFrame.addPage("templates", new TemplatesPage(this));

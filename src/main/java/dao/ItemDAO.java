@@ -18,7 +18,7 @@ public class ItemDAO {
     public List<Item> findAll() {
         List<Item> items = new ArrayList<>();
 
-        // select only the columns the UI needs.
+        //select only the columns the UI needs.
         String sql = """
                 SELECT
                     item_id,

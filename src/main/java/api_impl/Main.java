@@ -44,12 +44,18 @@ public class Main {
         Session session = new Session();
         MainFrame mainFrame = new MainFrame();
         SaleService saleService = new SaleService();
-        CustomerService customerService = new CustomerService();
         ItemService itemService = new ItemService();
+        SaleService orderService = new SaleService();
+        CustomerService customerService = new CustomerService();
+        TemplateService templateService = new TemplateService();
+        CatalogueService catalogueService = new CatalogueService();
+
+
 
         AppController appController = new AppController(
                 mainFrame, loginService, session,
-                customerService, itemService, saleService
+                customerService, itemService, saleService,
+                orderService, templateService, catalogueService
         );
 
         appController.start();

@@ -58,4 +58,23 @@ public class SaleService {
     public List<SaleItem> getBasket() {
         return basket;
     }
+
+    public void clearBasket(){
+        basket.clear();
+
+    }
+
+
+    //for orders with SA
+    public Result placeOrder(){
+        basket.clear();
+        return Result.fail("not done yet");
+    }
+
+    //for sales to customers in store.
+    public Result placeSale(){
+        basket.clear();
+        return Result.fail("not done yet");
+
+    };
 }

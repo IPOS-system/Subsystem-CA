@@ -134,8 +134,9 @@ public class SalesPage extends JPanel {
         return centre;
     }
 
+    //this should be renamed to load stock or something // its NOT the catalogue
     private void loadCatalogue() {
-        catalogueModel.setRowCount(0);
+        catalogueModel.setRowCount(0); //reset
         List<Item> items = itemService.findAll();
 
         for (Item i : items) {

@@ -26,9 +26,14 @@ public class ItemDAO {
                     package_type,
                     unit,
                     units_in_pack,
-                    package_cost
+                    package_cost,
+                    quantity_in_stock,
+                    stock_limit,
+                    markup
+                    
+                    
                 FROM Items
-                ORDER BY description
+                ORDER BY item_id
                 """;
 
         try (Connection con = DatabaseConnection.getConnection();
@@ -57,7 +62,10 @@ public class ItemDAO {
                     package_type,
                     unit,
                     units_in_pack,
-                    package_cost
+                    package_cost,
+                    quantity_in_stock,
+                    stock_limit,
+                    markup
                 FROM Items
                 WHERE item_id = ?
                 """;
@@ -80,14 +88,85 @@ public class ItemDAO {
         return null;
     }
 
+    public boolean addItemToStock(Item i){
+        String sql = """
+        INSERT INTO Items (
+            item_id, description, package_type, unit,
+            units_in_pack, package_cost,
+            quantity_in_stock, stock_limit, markup
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, i.getItemId());
+            ps.setString(2, i.getDescription());
+            ps.setString(3, i.getPackageType());
+            ps.setString(4, i.getUnit());
+            ps.setInt(5, i.getUnitsInPack());
+            ps.setBigDecimal(6, i.getPackageCost());
+            ps.setInt(7, i.getQtyInStock());
+            ps.setInt(8, i.getStockLimit());
+            ps.setBigDecimal(9, BigDecimal.valueOf(i.getMarkup()));
+
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public boolean modifyQtyInStock(String itemId, int newQty) {
+        String sql = "UPDATE Items SET quantity_in_stock = ? WHERE item_id = ?";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, newQty);
+            ps.setString(2, itemId);
+
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public boolean  removeItemFromStock(String itemId) {
+        String sql = "DELETE FROM Items WHERE item_id = ?";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, itemId);
+
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
+
     private Item mapRowToItem(ResultSet rs) throws SQLException {
-        Item i = new Item();
-        i.setItemId(rs.getString("item_id"));
-        i.setDescription(rs.getString("description"));
-        i.setPackageType(rs.getString("package_type"));
-        i.setUnit(rs.getString("unit"));
-        i.setUnitsInPack(rs.getInt("units_in_pack"));
-        i.setPackageCost(rs.getBigDecimal("package_cost"));
-        return i;
+        return new Item(
+                rs.getString("item_id"),
+                rs.getString("description"),
+                rs.getString("package_type"),
+                rs.getString("unit"),
+                rs.getInt("units_in_pack"),
+                rs.getBigDecimal("package_cost"),
+                rs.getInt("quantity_in_stock"),
+                rs.getInt("stock_limit"),
+                rs.getInt("markup")
+        );
     }
 }

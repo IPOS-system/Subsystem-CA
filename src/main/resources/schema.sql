@@ -103,7 +103,8 @@ CREATE TABLE IF NOT EXISTS Items (
     units_in_pack  INT NOT NULL,
     package_cost   DECIMAL(10,2) NOT NULL,
     quantity_in_stock INT NOT NULL,
-    stock_limit    INT NOT NULL
+    stock_limit    INT NOT NULL,
+    markup      DECIMAL(5,2) DEFAULT 0
     );
 
 INSERT IGNORE INTO Items (item_id, description, package_type, unit, units_in_pack,

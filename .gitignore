@@ -7,4 +7,4 @@
 !src/
 
 # Inside src, track everything
-src/**
+!src/**

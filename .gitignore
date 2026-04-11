@@ -1,3 +1,10 @@
-.idea/
-*.iml
-out/
+# Ignore everything
+*
+
+# But NOT these:
+!.gitignore
+!pom.xml
+!src/
+
+# Inside src, track everything
+src/**

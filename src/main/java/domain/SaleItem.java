@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public class SaleItem {
 
 
-    //private final String saleId;
+    private  String saleId;
     private final String itemId;
 
 
@@ -40,6 +40,11 @@ public class SaleItem {
     public BigDecimal getOrderItemPrice() {
         return unitPrice.multiply( BigDecimal.valueOf(quantity));
     }
+
+    public void setSaleId(String saleId){
+        this.saleId = saleId;
+    }
+
 
     public void updateQuantity(int quantity) {
         this.quantity = quantity;

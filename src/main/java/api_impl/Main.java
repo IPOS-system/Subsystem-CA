@@ -43,10 +43,12 @@ public class Main {
         LoginService loginService = new LoginService();
         Session session = new Session();
         MainFrame mainFrame = new MainFrame();
-        SaleService saleService = new SaleService();
-        ItemService itemService = new ItemService();
-        SaleService orderService = new SaleService();
         CustomerService customerService = new CustomerService();
+        DebtService debtService = new DebtService();
+        PaymentService paymentService = new PaymentService(debtService);
+        SaleService saleService = new SaleService(customerService, paymentService);
+        ItemService itemService = new ItemService();
+        SaleService orderService = new SaleService(customerService, paymentService);
         TemplateService templateService = new TemplateService();
         CatalogueService catalogueService = new CatalogueService();
 

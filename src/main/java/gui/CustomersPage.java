@@ -270,7 +270,7 @@ public class CustomersPage extends JPanel {
         }
     }
 
-    public void refreshTable(){
+    public void refresh(){
         loadCustomersIntoTable();
     }
 

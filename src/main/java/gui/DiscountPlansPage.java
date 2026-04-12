@@ -71,7 +71,7 @@ public class DiscountPlansPage extends JPanel {
 
         JButton backBtn = new JButton("Back");
         backBtn.addActionListener(e -> {
-            appController.showCustomersPageAndRefresh();
+            appController.showPage("customers");
         });
         bottom.add(backBtn);
 

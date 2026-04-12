@@ -2,6 +2,7 @@ package dao;
 
 import api_impl.DatabaseConnection;
 import domain.Item;
+import service.Result;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -119,11 +120,10 @@ public class ItemDAO {
         return true;
     }
 
-    public boolean modifyQtyInStock(String itemId, int newQty) {
+    public boolean modifyQtyInStock(Connection con, String itemId, int newQty) {
         String sql = "UPDATE Items SET quantity_in_stock = ? WHERE item_id = ?";
 
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, newQty);
             ps.setString(2, itemId);
@@ -135,6 +135,15 @@ public class ItemDAO {
             return false;
         }
         return true;
+    }
+
+    public boolean modifyQtyInStock(String itemId, int newQty) {
+        try (Connection con = DatabaseConnection.getConnection()) {
+            return modifyQtyInStock(con, itemId, newQty);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean  removeItemFromStock(String itemId) {
@@ -168,5 +177,33 @@ public class ItemDAO {
                 rs.getInt("stock_limit"),
                 rs.getInt("markup")
         );
+    }
+
+    public Result reduceStock(Connection con, String itemId, int quantity) {
+        String sql = """
+        UPDATE Items
+        SET quantity_in_stock = quantity_in_stock - ?
+        WHERE item_id = ?
+        AND quantity_in_stock >= ?
+        """;
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, quantity);
+            ps.setString(2, itemId);
+            ps.setInt(3, quantity);
+
+            int rowsUpdated = ps.executeUpdate();
+
+            if (rowsUpdated == 0) {
+                return Result.fail("not enough stock for item " + itemId);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Result.fail(e.getMessage());
+        }
+
+        return Result.success("stock reduced");
     }
 }

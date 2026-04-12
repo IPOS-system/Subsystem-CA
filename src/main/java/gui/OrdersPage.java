@@ -208,7 +208,7 @@ public class OrdersPage extends JPanel {
     }
 
     private void recalculateTotal() {
-        BigDecimal total = orderService.getBasketTotal();
+        BigDecimal total = orderService.getTotal();
         totalLbl.setText("Total: £" + total.setScale(2, RoundingMode.HALF_UP));
     }
 }

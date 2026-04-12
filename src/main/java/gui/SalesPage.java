@@ -2,12 +2,8 @@
 
 package gui;
 
-import domain.Item;
-import domain.SaleItem;
-import service.AppController;
-import service.ItemService;
-import service.Result;
-import service.SaleService;
+import domain.*;
+import service.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -25,6 +21,7 @@ public class SalesPage extends JPanel {
     JTable basketTable;       // basket
     DefaultTableModel basketModel;       // model for the basket tabl;e
     JLabel            totalLbl;        // running total
+    JLabel              currentCustLbl;
     JButton           addItemBtn;
     JButton           removeItemBtn;
     JButton           checkoutBtn;
@@ -37,13 +34,20 @@ public class SalesPage extends JPanel {
     JButton clearBtn;
 
 
+    private JComboBox<String> customerCmb;
+
+    JButton noAccBtn;
+    JButton selectCustomerBtn;
+
+
     //read catalog
     //private final ItemDAO itemDao = new ItemDAO();
     private final ItemService itemService;
     private final SaleService saleService;
     private final AppController appController;
 
-    public SalesPage(AppController appController, SaleService saleService, ItemService itemService) {
+    public SalesPage(AppController appController, SaleService saleService,
+                     ItemService itemService) {
         this.appController = appController;
         this.saleService = saleService;
         this.itemService = itemService;
@@ -71,6 +75,20 @@ public class SalesPage extends JPanel {
         basketTable.setFillsViewportHeight(true);
         basketTable.getTableHeader().setReorderingAllowed(false);
 
+        JPanel customerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+         customerCmb = new JComboBox<>();
+        selectCustomerBtn = new JButton("Select");
+
+        noAccBtn = new JButton("no account");
+
+        loadCustomers();
+
+        customerPanel.add(new JLabel("Customer:"));
+        customerPanel.add(customerCmb);
+        customerPanel.add(selectCustomerBtn);
+        customerPanel.add(noAccBtn);
+
+
 
 
         // search bar (top)
@@ -97,9 +115,15 @@ public class SalesPage extends JPanel {
         JPanel cataloguePanel = new JPanel(new BorderLayout(5, 5));
 
         // add components to cataloge panel
-        cataloguePanel.add(searchPanel, BorderLayout.NORTH);
-        cataloguePanel.add(new JScrollPane(catalogueTable), BorderLayout.CENTER);
 
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+
+        topPanel.add(customerPanel);
+        topPanel.add(searchPanel);
+
+        cataloguePanel.add(topPanel, BorderLayout.NORTH);
+        cataloguePanel.add(new JScrollPane(catalogueTable), BorderLayout.CENTER);
         // load data once
         loadCatalogue();
 
@@ -119,6 +143,9 @@ public class SalesPage extends JPanel {
         totalLbl = new JLabel("Total: £0.00");
         totalLbl.setFont(totalLbl.getFont().deriveFont(Font.BOLD, 14f));
 
+        currentCustLbl =  new JLabel();
+        currentCustLbl.setFont(currentCustLbl.getFont().deriveFont(Font.BOLD, 14f));
+
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         addItemBtn    = new JButton("Add Item");
         removeItemBtn = new JButton("Remove Item");
@@ -132,6 +159,7 @@ public class SalesPage extends JPanel {
 
 
         bottom.add(totalLbl, BorderLayout.WEST);
+        bottom.add(currentCustLbl, BorderLayout.CENTER);
         bottom.add(btnPanel, BorderLayout.EAST);
         centre.add(bottom, BorderLayout.SOUTH);
 
@@ -164,6 +192,52 @@ public class SalesPage extends JPanel {
         removeItemBtn.addActionListener(e -> onRemoveItem());
         checkoutBtn.addActionListener(e -> onCheckout());
         clearBtn.addActionListener(e -> onClearBtn());
+        selectCustomerBtn.addActionListener(e -> onSelectCustomer());
+        noAccBtn.addActionListener(e -> onNoAccBtn());
+    }
+
+    private PaymentInfo showPaymentDialog() {
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+
+        JRadioButton cashBtn = new JRadioButton("Cash");
+        JRadioButton cardBtn = new JRadioButton("Card");
+        JRadioButton accountBtn = new JRadioButton("Account");
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(cashBtn);
+        group.add(cardBtn);
+
+        panel.add(cashBtn);
+        panel.add(cardBtn);
+
+        if (!(saleService.getCurrentCustomerName().equals( "no customer selected"))) {
+            group.add(accountBtn);
+            panel.add(accountBtn);
+        }
+
+        cashBtn.setSelected(true);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Select Payment Method",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result != JOptionPane.OK_OPTION) return null;
+
+        PaymentInfo info = new PaymentInfo();
+
+        if (cashBtn.isSelected()) {
+            info.method= "cash";
+        } else if (cardBtn.isSelected()) {
+            String cardNumber = JOptionPane.showInputDialog(this, "Enter card number:");
+            if (cardNumber == null || cardNumber.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Invalid card number");
+                return null;
+            }
+            info.method = "card";
+            info.cardNumber = cardNumber.trim();
+        } else if (accountBtn.isSelected()) {
+            info.method = "account";
+        }
+        return info;
     }
 
     //use this bad boy when you add/remove from basket
@@ -181,6 +255,19 @@ public class SalesPage extends JPanel {
         }
     }
 
+    private void onNoAccBtn(){
+        customerCmb.setSelectedIndex(-1);
+        saleService.setCustomer(null);
+        refresh();
+    }
+
+
+    private void onSelectCustomer(){
+        String selected = (String) customerCmb.getSelectedItem();
+        String accountId = (selected != null) ? selected.split(" - ")[0] : null;
+        saleService.setCustomer(accountId);
+        refresh();
+    }
 
     private void onAddItem() {
 
@@ -215,13 +302,11 @@ public class SalesPage extends JPanel {
 
         // delegate logic to service
         Result addToBasketResult = saleService.addItemToBasket(itemToAdd,qty);
-        updateBasketTable();
 
         if(!addToBasketResult.isSuccess()) {
             JOptionPane.showMessageDialog(this, addToBasketResult.getMessage());
         }
-        recalculateTotal();
-
+        refresh();
     }
 
 
@@ -229,7 +314,7 @@ public class SalesPage extends JPanel {
         int sel = basketTable.getSelectedRow();
         if (sel == -1) {
             JOptionPane.showMessageDialog(this,
-                    "Select a line‑item to remove.", "Info",
+                    "Select a item to remove.", "Info",
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
@@ -253,6 +338,15 @@ public class SalesPage extends JPanel {
                     "Info", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
+        PaymentInfo paymentMethod = showPaymentDialog(); //get payment meth
+
+        Result saleResult = saleService.placeSale(paymentMethod);
+        JOptionPane.showMessageDialog(this, saleResult.getMessage());
+
+        //clear everything with refresh()
+        recalculateTotal();
+        updateBasketTable();
+        recalculateTotal();
 
 
 
@@ -264,16 +358,35 @@ public class SalesPage extends JPanel {
 
     private void onClearBtn(){
         saleService.clearBasket();
-        updateBasketTable();
-        recalculateTotal();
+        refresh();
     }
+
+    private void loadCustomers(){
+        customerCmb.removeAllItems();
+        for (CustomerAccount c : saleService.getAllCustomers()) {
+
+            customerCmb.addItem(c.getAccountId() + " - " + c.getAccountHolderName());
+        }
+    }
+
 
 
     private void recalculateTotal() {
-        BigDecimal total = saleService.getBasketTotal();
+        BigDecimal total = saleService.getTotal();
         totalLbl.setText("Total: £" + total.setScale(2, RoundingMode.HALF_UP));
     }
 
+    private void showCurrentCustomer(){
+        currentCustLbl.setText( "Current customer = "+ saleService.getCurrentCustomerName());
+    };
 
-
+    //reload the page to prevent stale data
+    //we use items and customers which could change, so reload when this panel is switched to.
+    public void refresh(){
+        updateBasketTable();
+        loadCatalogue();
+        loadCustomers();
+        recalculateTotal();
+        showCurrentCustomer();
+    }
 }

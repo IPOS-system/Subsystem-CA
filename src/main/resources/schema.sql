@@ -194,22 +194,23 @@ CREATE TABLE IF NOT EXISTS MerchantInfo (
 
 INSERT IGNORE INTO MerchantInfo (id) VALUES (1);
 
--- ==============================================================
+-- -------------------------------------------------------------
 --  TEMPLATES – reminder / receipt / invoice templates
--- ==============================================================
-
+-- -------------------------------------------------------------
 DROP TABLE IF EXISTS Templates;
 CREATE TABLE IF NOT EXISTS Templates (
-                                         template_id   INT AUTO_INCREMENT PRIMARY KEY,
-                                         name          VARCHAR(150) NOT NULL,
-    type          VARCHAR(30)  NOT NULL,   -- REMINDER, RECEIPT, INVOICE
-    content       TEXT         NULL,       -- plain‑text version (optional)
-    content_blob  MEDIUMBLOB   NULL,       -- binary .docx (optional)
-    file_path    VARCHAR(255) NULL        -- path of the .docx on the server (optional)
+    template_id   INT AUTO_INCREMENT PRIMARY KEY,
+    name          VARCHAR(150)  NOT NULL,
+    type          VARCHAR(30)   NOT NULL,   -- REMINDER, RECEIPT, INVOICE
+    content       TEXT          NULL,       -- plain‑text version (optional)
+    content_blob  MEDIUMBLOB    NULL,       -- binary .docx (optional)
+    file_path     VARCHAR(255)  NULL,       -- absolute path to a .docx file (optional)
+    logo_paths    VARCHAR(1024) NULL,       -- comma‑separated absolute PNG paths (optional)
+    table_data    TEXT          NULL        -- CSV text that describes a table (optional)
     );
 
 -- ==============================================================
---  TEST TABLE (kept because the original schema had it)
+--  TEST TABLE
 -- ==============================================================
 
 DROP TABLE IF EXISTS test;

@@ -1,23 +1,17 @@
 package api;
 
-import domain.Product;
+import domain.Item;
 
 import java.util.List;
 
 public interface ICatalogueAPI {
 
-	List<Product> listProducts();
+	List<Item> listProducts();
 
 	/**
 	 * 
 	 * @param keyword
 	 */
-	List<Product> searchProducts(String keyword);
 
-	/**
-	 * 
-	 * @param productID
-	 */
-	Product getProductDetails(String productID);
 
 }

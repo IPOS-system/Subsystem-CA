@@ -206,4 +206,15 @@ public class ItemDAO {
 
         return Result.success("stock reduced");
     }
+
+    public Result reduceStock(String itemId, int quantity) {
+        try (Connection con = DatabaseConnection.getConnection()) {
+            return reduceStock(con, itemId, quantity);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Result.fail("database error");
+        }
+    }
+
+
 }

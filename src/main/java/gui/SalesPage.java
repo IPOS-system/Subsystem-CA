@@ -339,6 +339,7 @@ public class SalesPage extends JPanel {
             return;
         }
         PaymentInfo paymentMethod = showPaymentDialog(); //get payment meth
+        //TODO null pointer exception
 
         Result saleResult = saleService.placeSale(paymentMethod);
         JOptionPane.showMessageDialog(this, saleResult.getMessage());

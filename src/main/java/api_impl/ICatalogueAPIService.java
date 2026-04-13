@@ -1,24 +1,24 @@
 package api_impl;
 
 import api.ICatalogueAPI;
-import domain.Product;
+import domain.Item;
+import org.apache.commons.math3.stat.descriptive.summary.Product;
+import org.springframework.stereotype.Service;
+import service.ItemService;
 
 import java.util.List;
 
 public class ICatalogueAPIService implements ICatalogueAPI {
+    private ItemService itemService= new ItemService();
 
-    public List<Product> listProducts() {
-        return List.of(
-                new Product(),
-                new Product()
-        );
+    public ICatalogueAPIService() {
     }
 
-    public List<Product> searchProducts(String keyword) {
-        return listProducts();
+    @Override
+    public List<Item> listProducts() {
+
+        return itemService.findAll();
     }
 
-    public Product getProductDetails(String productID) {
-        return new Product();
-    }
+
 }

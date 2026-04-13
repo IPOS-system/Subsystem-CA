@@ -2,10 +2,12 @@ package service;
 
 import dao.ItemDAO;
 import domain.Item;
-import org.apache.logging.log4j.message.ReusableMessage;
+
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class ItemService {
     private final ItemDAO itemDAO;
 
@@ -55,9 +57,36 @@ public class ItemService {
         else{
             return Result.fail("qty is NOT zero. so not deleted. ");
         }
+    }
 
+    public Result checkStock(String itemId, int quantity) {
+        Item item = itemDAO.findById(itemId);
 
+        if (item == null) {
+            return Result.fail("item does not exist");
+        }
+
+        if (item.getQtyInStock() >= quantity) {
+            return Result.success("ok");
+        } else {
+            return Result.fail("not enough stock");
+        }
+    }
+
+    public Result deductStock(String itemId, int quantity) {
+        if (quantity <= 0) {
+            return Result.fail("quantity must be positive");
+        }
+
+        Item item = itemDAO.findById(itemId);
+
+        if (item == null) {
+            return Result.fail("item does not exist");
+        }
+
+        return itemDAO.reduceStock(itemId, quantity);
     }
 
 
 }
+

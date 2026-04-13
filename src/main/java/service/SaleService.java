@@ -112,6 +112,7 @@ public class SaleService {
             currentCustomer = customerService.findById(customerId);
         }
     }
+
     public String getCurrentCustomerName(){
         if(currentCustomer == null){
             return "no customer selected";

@@ -6,32 +6,29 @@ import service.TemplateService;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import java.awt.image.BufferedImage;
 
 /**
- * TemplatesPage – manager can
- *   • list, filter, edit, save, delete templates
- *   • add **any number of PNG logos** (logos are stored per‑template)
- *   • type {@code ${LOGO}} in the editor – each occurrence uses the next logo
- *   • type {@code ${TABLE}} to insert a table (CSV data defined in the "Table Data" area)
- *   • edit a selected template (Edit button)
- *   • preview **inside the app** – width limited to A4 (≈ 595 px)
- *   • export to **Word (.docx)** or **PDF**
+ * TemplatesPage – clean UI that now:
  *
- * All heavy‑lifting is delegated to {@link TemplateService}.
+ *   • lets you **upload a .txt** file (its content goes straight into the editor).<br>
+ *   • lets you add **any number of PNG logos** (they are appended at the bottom of the document).<br>
+ *   • shows **preview in‑place** (a scrollable image of the first PDF page).<br>
+ *   • removes the CSV table maker and the Word‑doc checkbox.<br>
+ *
+ * All GUI → Service → DAO → DB flow is preserved.
  */
 public class TemplatesPage extends JPanel {
 
@@ -42,33 +39,31 @@ public class TemplatesPage extends JPanel {
     private DefaultListModel<Template> listModel;
     private List<Template> allTemplates;
 
-    // ---- filter UI ----
+
+    // ---------------- filter UI ----------------
     private JComboBox<String> cmbFilterType;
     private JTextField txtSearch;
 
-    // ---- editor fields ----
+    // ---------------- editor UI ----------------
     private JTextField txtName;
     private JComboBox<String> cmbType;
-    private JCheckBox chkWordDoc;
-    private JTextField txtFilePath;
-    private JButton btnBrowseFile;
+    private JTextArea txtContent;
+    private JScrollPane txtScroll;
 
-    // ---- logo UI (multiple) ----
+    // ---------------- logo UI (multiple) ----------------
     private DefaultListModel<String> logoListModel;
     private JList<String> logoList;
     private JButton btnAddLogo, btnRemoveLogo;
 
-    // ---- plain‑text area ----
-    private JTextArea txtContent;
-    private JScrollPane txtScroll;
-    private JSplitPane verticalSplit;
+    // ---------------- buttons ----------------
+    private JButton btnNew, btnEdit, btnSave, btnDelete, btnPreview, btnExport, btnUploadTxt;
 
-    // ---- table data UI ----
-    private JTextArea txtTableData;
-    private JScrollPane tableScroll;
+    // ---------------- preview panel (in‑place) ----------------
+    private JPanel previewPanel;               // holds the preview image + back button
+    private JLabel previewLabel;                // image of the PDF page
+    private JButton btnBackToEdit;
+    private JPanel cardPanel;          // holds the "EDITOR" and "PREVIEW" cards
 
-    // ---- action buttons ----
-    private JButton btnNew, btnEdit, btnSave, btnDelete, btnPreview, btnExport;
 
     public TemplatesPage(AppController appController) {
         this.appController = appController;
@@ -85,7 +80,7 @@ public class TemplatesPage extends JPanel {
     }
 
     /* ------------------------------------------------------------
-       BUILD THE CENTER PANEL (list + editor)
+       BUILD THE CENTER PANEL (list + editor + preview)
        ------------------------------------------------------------ */
     private JPanel buildCenterPanel() {
         JPanel centre = new JPanel(new BorderLayout(10, 10));
@@ -111,49 +106,45 @@ public class TemplatesPage extends JPanel {
         listScroll.setPreferredSize(new Dimension(200,0));
         leftPanel.add(listScroll, BorderLayout.CENTER);
 
-        /* ------------------ RIGHT (editor) ------------------ */
-        JPanel editor = new JPanel(new BorderLayout(5,5));
+        /* ------------------ RIGHT (editor + preview) ------------------ */
+        JPanel rightPanel = new JPanel(new CardLayout());   // two cards: editor / preview
 
-        // ----- fields panel (grid bag) -----
-        JPanel fieldsPanel = new JPanel(new GridBagLayout());
+        /* ---------- EDITOR CARD ---------- */
+        JPanel editorCard = new JPanel(new BorderLayout(5,5));
+
+        // ---- top fields (name + type) ----
+        JPanel topFields = new JPanel(new GridBagLayout());
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(4,4,4,4);
         gc.anchor = GridBagConstraints.WEST;
         gc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Row 0 – Template name
+        // Row 0 – template name
         gc.gridx = 0; gc.gridy = 0;
-        fieldsPanel.add(new JLabel("Template name:"), gc);
+        topFields.add(new JLabel("Template name:"), gc);
         txtName = new JTextField(30);
         gc.gridx = 1;
-        fieldsPanel.add(txtName, gc);
+        topFields.add(txtName, gc);
 
-        // Row 1 – Type selector
+        // Row 1 – type selector
         gc.gridx = 0; gc.gridy = 1;
-        fieldsPanel.add(new JLabel("Type:"), gc);
+        topFields.add(new JLabel("Type:"), gc);
         cmbType = new JComboBox<>(new String[]{"REMINDER","RECEIPT","INVOICE"});
         gc.gridx = 1;
-        fieldsPanel.add(cmbType, gc);
+        topFields.add(cmbType, gc);
 
-        // Row 2 – Word‑doc flag
-        gc.gridx = 0; gc.gridy = 2; gc.gridwidth = 2;
-        chkWordDoc = new JCheckBox("Template is a Word document (.docx)");
-        fieldsPanel.add(chkWordDoc, gc);
-        gc.gridwidth = 1; // reset
+        editorCard.add(topFields, BorderLayout.NORTH);
 
-        // Row 3 – .docx file chooser
-        gc.gridx = 0; gc.gridy = 3; gc.gridwidth = 2;
-        JPanel filePanel = new JPanel(new BorderLayout(5,0));
-        txtFilePath = new JTextField(20);
-        txtFilePath.setEditable(false);
-        btnBrowseFile = new JButton("Browse…");
-        filePanel.add(txtFilePath, BorderLayout.CENTER);
-        filePanel.add(btnBrowseFile, BorderLayout.EAST);
-        fieldsPanel.add(filePanel, gc);
-        gc.gridwidth = 1;
+        // ---- plain‑text editor (center) ----
+        txtContent = new JTextArea(20,40);
+        txtContent.setLineWrap(true);
+        txtContent.setWrapStyleWord(true);
+        // Approximate A4 width (595 px) – height scrolls
+        txtContent.setPreferredSize(new Dimension(595,842));
+        txtScroll = new JScrollPane(txtContent);
+        editorCard.add(txtScroll, BorderLayout.CENTER);
 
-        // Row 4 – Logos list + add / remove buttons
-        gc.gridx = 0; gc.gridy = 4; gc.gridwidth = 2;
+        // ---- logo list + add/remove buttons (south left) ----
         JPanel logoPanel = new JPanel(new BorderLayout(5,0));
         logoListModel = new DefaultListModel<>();
         logoList = new JList<>(logoListModel);
@@ -167,38 +158,11 @@ public class TemplatesPage extends JPanel {
         logoBtnPanel.add(btnAddLogo);
         logoBtnPanel.add(btnRemoveLogo);
 
+        logoPanel.add(new JLabel("Logos (will appear at the bottom)"), BorderLayout.NORTH);
         logoPanel.add(logoScroll, BorderLayout.CENTER);
         logoPanel.add(logoBtnPanel, BorderLayout.SOUTH);
-        fieldsPanel.add(logoPanel, gc);
-        gc.gridwidth = 1; // reset
 
-        // Row 5 – Table data (optional CSV)
-        gc.gridx = 0; gc.gridy = 5; gc.gridwidth = 2;
-        JPanel tablePanel = new JPanel(new BorderLayout(5,0));
-        txtTableData = new JTextArea(5,30);
-        txtTableData.setLineWrap(true);
-        txtTableData.setWrapStyleWord(true);
-        tableScroll = new JScrollPane(txtTableData);
-        tablePanel.add(new JLabel("Table Data (CSV – one row per line, commas separate columns):"), BorderLayout.NORTH);
-        tablePanel.add(tableScroll, BorderLayout.CENTER);
-        fieldsPanel.add(tablePanel, gc);
-        gc.gridwidth = 1; // reset
-
-        // ----- plain‑text editor (vertical split) -----
-        txtContent = new JTextArea(15,40);
-        txtContent.setLineWrap(true);
-        txtContent.setWrapStyleWord(true);
-        // Approximate A4 width (595 px) – height scrolls
-        txtContent.setPreferredSize(new Dimension(595,842));
-        txtScroll = new JScrollPane(txtContent);
-        txtScroll.setMinimumSize(new Dimension(200,100));
-
-        verticalSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, fieldsPanel, txtScroll);
-        verticalSplit.setResizeWeight(0.6);
-        verticalSplit.setOneTouchExpandable(true);
-        editor.add(verticalSplit, BorderLayout.CENTER);
-
-        // ----- action button bar -----
+        // ---- bottom buttons (row) ----
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         btnNew      = new JButton("New");
         btnEdit     = new JButton("Edit");
@@ -206,18 +170,39 @@ public class TemplatesPage extends JPanel {
         btnDelete   = new JButton("Delete");
         btnPreview  = new JButton("Preview");
         btnExport   = new JButton("Export…");
+        btnUploadTxt = new JButton("Upload .txt");
+        btnPanel.add(btnUploadTxt);
         btnPanel.add(btnNew);
         btnPanel.add(btnEdit);
         btnPanel.add(btnSave);
         btnPanel.add(btnDelete);
         btnPanel.add(btnPreview);
         btnPanel.add(btnExport);
-        editor.add(btnPanel, BorderLayout.SOUTH);
 
-        // Main split (list vs editor)
-        JSplitPane mainSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, editor);
+        // Assemble south part
+        JPanel southPanel = new JPanel(new BorderLayout(5,5));
+        southPanel.add(logoPanel, BorderLayout.CENTER);
+        southPanel.add(btnPanel, BorderLayout.SOUTH);
+        editorCard.add(southPanel, BorderLayout.SOUTH);
+
+        /* ---------- PREVIEW CARD ---------- */
+        previewPanel = new JPanel(new BorderLayout(5,5));
+        previewLabel = new JLabel();                     // will hold an ImageIcon
+        JScrollPane previewScroll = new JScrollPane(previewLabel);
+        btnBackToEdit = new JButton("Back to edit");
+        previewPanel.add(previewScroll, BorderLayout.CENTER);
+        previewPanel.add(btnBackToEdit, BorderLayout.SOUTH);
+
+        /* ---------- CARD LAYOUT ---------- */
+        cardPanel = new JPanel(new CardLayout());   // <‑‑ store it in the field
+        cardPanel.add(editorCard, "EDITOR");
+        cardPanel.add(previewPanel, "PREVIEW");
+
+        /* ---------- MAIN SPLIT ---------- */
+        JSplitPane mainSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, cardPanel);
         mainSplit.setResizeWeight(0.25);
         centre.add(mainSplit, BorderLayout.CENTER);
+
         return centre;
     }
 
@@ -225,7 +210,7 @@ public class TemplatesPage extends JPanel {
        LOAD & FILTER
        ------------------------------------------------------------ */
     private void loadTemplatesFromDb() {
-        allTemplates = templateService.listTemplates();   // list view (no BLOB)
+        allTemplates = templateService.listTemplates();
         applyFilters();
     }
 
@@ -253,7 +238,6 @@ public class TemplatesPage extends JPanel {
             if (e.getValueIsAdjusting()) return;
             Template sel = templateJList.getSelectedValue();
             populateEditor(sel);
-            setEditMode(false);            // disable editing until user clicks Edit
         });
 
         cmbFilterType.addActionListener(e -> applyFilters());
@@ -262,27 +246,29 @@ public class TemplatesPage extends JPanel {
             @Override public void update() { applyFilters(); }
         });
 
-        chkWordDoc.addActionListener(e -> {
-            boolean isDoc = chkWordDoc.isSelected();
-            txtContent.setEnabled(!isDoc);
-            btnBrowseFile.setEnabled(isDoc);
-        });
-
-        btnBrowseFile.addActionListener(e -> {
+        // ---------- Upload .txt ----------
+        btnUploadTxt.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
-            chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("DOCX files", "docx"));
+            chooser.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
             int rc = chooser.showOpenDialog(this);
             if (rc == JFileChooser.APPROVE_OPTION) {
                 File f = chooser.getSelectedFile();
-                txtFilePath.setText(f.getAbsolutePath());
-                chkWordDoc.setSelected(true);
+                try {
+                    String content = Files.readString(f.toPath());
+                    txtContent.setText(content);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this,
+                            "Could not read the text file.", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
-        // ----- LOGO LIST -----
+        // ---------- Logo add / remove ----------
         btnAddLogo.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
-            chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("PNG images", "png"));
+            chooser.setFileFilter(new FileNameExtensionFilter("PNG images", "png"));
             int rc = chooser.showOpenDialog(this);
             if (rc == JFileChooser.APPROVE_OPTION) {
                 File f = chooser.getSelectedFile();
@@ -295,13 +281,14 @@ public class TemplatesPage extends JPanel {
             if (idx >= 0) logoListModel.remove(idx);
         });
 
-        // ----- CRUD -----
+        // ---------- NEW ----------
         btnNew.addActionListener(e -> {
             templateJList.clearSelection();
             clearEditor();
             setEditMode(true);
         });
 
+        // ---------- EDIT ----------
         btnEdit.addActionListener(e -> {
             Template sel = templateJList.getSelectedValue();
             if (sel == null) {
@@ -313,8 +300,10 @@ public class TemplatesPage extends JPanel {
             setEditMode(true);
         });
 
+        // ---------- SAVE ----------
         btnSave.addActionListener(e -> saveCurrentTemplate());
 
+        // ---------- DELETE ----------
         btnDelete.addActionListener(e -> {
             Template sel = templateJList.getSelectedValue();
             if (sel == null) {
@@ -333,13 +322,10 @@ public class TemplatesPage extends JPanel {
             }
         });
 
-        // ------------------------------------------------------------
-// PREVIEW BUTTON
-// ------------------------------------------------------------
+        // ---------- PREVIEW ----------
         btnPreview.addActionListener(e -> {
-            // Build a temporary Template that mirrors the editor – **do NOT clear the selection**
-            Template tmpl = buildTemplateFromEditor();
-            if (tmpl == null) return;   // error already shown
+            Template tmpl = buildTemplateFromEditor();   // builds from UI fields
+            if (tmpl == null) return;                 // error already shown
 
             Map<String,String> demoPlaceholders = Map.of(
                     "CUSTOMER_NAME", "John Doe",
@@ -348,9 +334,20 @@ public class TemplatesPage extends JPanel {
             );
 
             try {
-                // PDF preview – we always render a PDF (logos, tables, etc.)
                 byte[] pdfBytes = templateService.renderAsPdf(tmpl, demoPlaceholders);
-                showPdfPreview(pdfBytes, "Template preview (PDF)");
+                // Convert the first PDF page to an image
+                BufferedImage img;
+                try (PDDocument pdf = PDDocument.load(pdfBytes)) {
+                    PDFRenderer renderer = new PDFRenderer(pdf);
+                    img = renderer.renderImageWithDPI(0, 150);   // 150 DPI → nice size
+                }
+
+                // Show the image in the preview panel
+                previewLabel.setIcon(new ImageIcon(img));
+
+                // ---- SWITCH TO THE PREVIEW CARD ----
+                CardLayout cl = (CardLayout) cardPanel.getLayout();   // <‑‑ **fixed**
+                cl.show(cardPanel, "PREVIEW");
             } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(this,
@@ -359,7 +356,15 @@ public class TemplatesPage extends JPanel {
             }
         });
 
-        // ----- EXPORT -----
+
+        // ---------- BACK FROM PREVIEW ----------
+        btnBackToEdit.addActionListener(e -> {
+            CardLayout cl = (CardLayout) cardPanel.getLayout();   // <‑‑ **fixed**
+            cl.show(cardPanel, "EDITOR");
+        });
+
+
+        // ---------- EXPORT ----------
         btnExport.addActionListener(e -> {
             Template tmpl = buildTemplateFromEditor();
             if (tmpl == null) return;
@@ -367,20 +372,20 @@ public class TemplatesPage extends JPanel {
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogTitle("Export template");
             chooser.setAcceptAllFileFilterUsed(false);
-            chooser.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Word Document (*.docx)", "docx"));
-            chooser.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("PDF Document (*.pdf)", "pdf"));
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("Word Document (*.docx)", "docx"));
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("PDF Document (*.pdf)", "pdf"));
 
             int rc = chooser.showSaveDialog(this);
             if (rc != JFileChooser.APPROVE_OPTION) return;
             File target = chooser.getSelectedFile();
-            String ext = ((javax.swing.filechooser.FileNameExtensionFilter) chooser.getFileFilter())
+            String ext = ((FileNameExtensionFilter) chooser.getFileFilter())
                     .getExtensions()[0];
             if (!target.getName().toLowerCase().endsWith("." + ext))
                 target = new File(target.getParentFile(), target.getName() + "." + ext);
 
             Map<String,String> demoPlaceholders = Map.of(
                     "CUSTOMER_NAME", "John Doe",
-                    "DUE_DATE",      java.time.LocalDate.now().plusDays(7).toString(),
+                    "DUE_DATE",      LocalDate.now().plusDays(7).toString(),
                     "TOTAL",         "£123.45"
             );
 
@@ -405,22 +410,7 @@ public class TemplatesPage extends JPanel {
     }
 
     /* ------------------------------------------------------------
-       Helper – show a PDF preview (first page) inside a dialog.
-       ------------------------------------------------------------ */
-    private void showPdfPreview(byte[] pdfBytes, String title) throws IOException {
-        try (PDDocument doc = PDDocument.load(pdfBytes)) {
-            PDFRenderer renderer = new PDFRenderer(doc);
-            BufferedImage img = renderer.renderImageWithDPI(0, 150); // 150 DPI → readable size
-            ImageIcon icon = new ImageIcon(img);
-            JLabel label = new JLabel(icon);
-            JScrollPane sp = new JScrollPane(label);
-            sp.setPreferredSize(new Dimension(595, 842)); // A4 size in pixels at 150 DPI ≈ 595×842
-            JOptionPane.showMessageDialog(this, sp, title, JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-
-    /* ------------------------------------------------------------
-       Populate / clear / edit‑mode toggle / build template from UI
+       Helper – populate / clear / edit‑mode toggle / build Template
        ------------------------------------------------------------ */
     private void populateEditor(Template t) {
         if (t == null) {
@@ -429,47 +419,30 @@ public class TemplatesPage extends JPanel {
         }
         txtName.setText(t.getName());
         cmbType.setSelectedItem(t.getType());
-
-        boolean isDoc = t.getBinaryContent() != null;
-        chkWordDoc.setSelected(isDoc);
-        txtContent.setEnabled(!isDoc);
-        btnBrowseFile.setEnabled(isDoc);
-        txtFilePath.setText(isDoc ? "[binary .docx stored]" : "");
+        txtContent.setText(t.getContent() == null ? "" : t.getContent());
 
         // logos
         logoListModel.clear();
         if (t.getLogoPaths() != null)
             t.getLogoPaths().forEach(logoListModel::addElement);
-
-        // table data
-        txtTableData.setText(t.getTableData() == null ? "" : t.getTableData());
     }
 
     private void clearEditor() {
         txtName.setText("");
         cmbType.setSelectedIndex(0);
-        chkWordDoc.setSelected(false);
         txtContent.setText("");
-        txtFilePath.setText("");
-        txtContent.setEnabled(true);
-        btnBrowseFile.setEnabled(false);
         logoListModel.clear();
-        txtTableData.setText("");
+        setEditMode(false);
     }
 
-    /** Enable editing of all fields (except the list). */
     private void setEditMode(boolean enabled) {
         txtName.setEnabled(enabled);
         cmbType.setEnabled(enabled);
-        chkWordDoc.setEnabled(enabled);
-        txtContent.setEnabled(enabled && !chkWordDoc.isSelected());
-        btnBrowseFile.setEnabled(enabled && chkWordDoc.isSelected());
+        txtContent.setEnabled(enabled);
         btnAddLogo.setEnabled(enabled);
         btnRemoveLogo.setEnabled(enabled);
-        txtTableData.setEnabled(enabled);
+        btnSave.setEnabled(enabled);
     }
-
-
 
     private void saveCurrentTemplate() {
         String name = txtName.getText().trim();
@@ -485,42 +458,13 @@ public class TemplatesPage extends JPanel {
         Template tmpl = new Template();
         tmpl.setName(name);
         tmpl.setType(type);
+        tmpl.setContent(txtContent.getText());
 
-        // ---- .docx handling ----
-        if (chkWordDoc.isSelected()) {
-            String path = txtFilePath.getText().trim();
-            if (path.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "Select a .docx file for the template.", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            try {
-                File f = new File(path);
-                tmpl.setBinaryContent(Files.readAllBytes(f.toPath()));
-                tmpl.setContent(null);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this,
-                        "Could not read the selected file.", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        } else {
-            // plain‑text template (logos & tables are allowed)
-            tmpl.setContent(txtContent.getText());
-            tmpl.setBinaryContent(null);
-        }
-
-        // ---- logos (ordered) ----
+        // logos (ordered)
         List<String> logos = Collections.list(logoListModel.elements());
         tmpl.setLogoPaths(logos);
 
-        // ---- table data (CSV) ----
-        String csv = txtTableData.getText().trim();
-        tmpl.setTableData(csv.isEmpty() ? null : csv);
-
-        // ---- preserve id if editing an existing row ----
+        // preserve id if editing existing row
         Template selected = templateJList.getSelectedValue();
         if (selected != null && selected.getId() != null) {
             tmpl.setId(selected.getId());
@@ -531,9 +475,9 @@ public class TemplatesPage extends JPanel {
             if (ok) {
                 JOptionPane.showMessageDialog(this,
                         "Template saved.", "Info", JOptionPane.INFORMATION_MESSAGE);
-                // Refresh the list but **keep the current selection** (so the editor stays populated)
                 loadTemplatesFromDb();
-                // re‑select the saved row
+
+                // re‑select the saved template in the list
                 if (tmpl.getId() != null) {
                     for (int i = 0; i < listModel.size(); i++) {
                         if (listModel.get(i).getId().equals(tmpl.getId())) {
@@ -542,6 +486,7 @@ public class TemplatesPage extends JPanel {
                         }
                     }
                 }
+                setEditMode(false);
             } else {
                 JOptionPane.showMessageDialog(this,
                         "Failed to save template.", "Error",
@@ -555,9 +500,8 @@ public class TemplatesPage extends JPanel {
         }
     }
 
-
     /**
-     * Build a {@link Template} instance that mirrors the current UI.
+     * Build a {@link Template} instance that mirrors the current UI fields.
      * Used for preview and export without persisting first.
      */
     private Template buildTemplateFromEditor() {
@@ -565,36 +509,12 @@ public class TemplatesPage extends JPanel {
 
         tmpl.setName(txtName.getText().trim());
         tmpl.setType((String) cmbType.getSelectedItem());
+        tmpl.setContent(txtContent.getText());
 
-        // logos
         List<String> logos = Collections.list(logoListModel.elements());
         tmpl.setLogoPaths(logos);
 
-        // table data
-        String csv = txtTableData.getText().trim();
-        tmpl.setTableData(csv.isEmpty() ? null : csv);
-
-        if (chkWordDoc.isSelected()) {
-            String path = txtFilePath.getText().trim();
-            if (!path.isEmpty()) {
-                try {
-                    tmpl.setBinaryContent(Files.readAllBytes(Paths.get(path)));
-                    tmpl.setFilePath(null);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this,
-                            "Could not read .docx file.", "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                    return null;
-                }
-            }
-        } else {
-            tmpl.setContent(txtContent.getText());
-            tmpl.setBinaryContent(null);
-            tmpl.setFilePath(null);
-        }
-
-        // keep id if editing an existing template (useful for logo fallback logic)
+        // keep id if editing an existing template
         Template selected = templateJList.getSelectedValue();
         if (selected != null && selected.getId() != null) {
             tmpl.setId(selected.getId());
@@ -612,9 +532,7 @@ public class TemplatesPage extends JPanel {
         @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { update(); }
     }
 
-    // -----------------------------------------------------------------
-    // Simple static tester – launch the page in its own window
-    // -----------------------------------------------------------------
+    //tester
     public static void show(AppController controller) {
         JFrame f = new JFrame("IPOS‑CA – Templates");
         f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

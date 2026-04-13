@@ -1,6 +1,7 @@
 package service;
 
 import dao.TemplateDAO;
+import dao.TemplateFileDAO;
 import domain.MerchantInfo;
 import domain.Template;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -14,47 +15,69 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Service layer – CRUD, DOCX rendering and PDF export.
+ * Business‑logic layer for Templates.
  *
- * <ul>
- *   <li>The placeholder {@code ${LOGO}} has been removed – logos are always
- *       appended **after** the body text.</li>
- *   <li>All CSV‑table handling has been removed.</li>
- *   <li>PDF rendering now draws the text first, then the logos (bottom‑up).</li>
- *   <li>Any TAB, carriage‑return or other illegal characters are stripped
- *       so the built‑in Helvetica font never throws
- *       {@code IllegalArgumentException}.</li>
- * </ul>
+ * – CRUD still goes to the DB (TemplateDAO).<br>
+ * – After a successful DB write we also persist the object to a
+ *   file using {@link TemplateFileDAO}.<br>
+ * – On application start we call {@link #syncTemplatesWithFilesystem()}
+ *   to make sure DB and file‑system stay in sync.
  */
 public class TemplateService {
 
     private final TemplateDAO dao = new TemplateDAO();
+    private final TemplateFileDAO fileDao = new TemplateFileDAO();
 
-    /** Force Arial on every POI run – eliminates missing‑font symbols. */
+    /* ------------------- FONT HELPERS ------------------- */
     private void forceArialFont(XWPFRun run) {
         run.setFontFamily("Arial");
     }
 
-    //helpers
+    /* ------------------- CRUD ------------------- */
     public List<Template> listTemplates() { return dao.findAll(); }
 
     public Template getTemplate(int id) { return dao.findById(id); }
 
+    private static final Set<String> VALID_TYPES =
+            Set.of("REMINDER","RECEIPT","INVOICE","OTHER");
+
+    /** Saves to DB **and** to the file system. */
     public boolean saveTemplate(Template tmpl) {
+        // ---- validation -------------------------------------------------
+        if (!VALID_TYPES.contains(tmpl.getType()))
+            throw new IllegalArgumentException("Invalid template type: " + tmpl.getType());
         if (tmpl.getName() == null || tmpl.getName().trim().isEmpty())
             throw new IllegalArgumentException("Template name cannot be empty");
         if (tmpl.getType() == null || tmpl.getType().trim().isEmpty())
             throw new IllegalArgumentException("Template type cannot be empty");
-        return (tmpl.getId() == null) ? dao.insert(tmpl) : dao.update(tmpl);
+
+        // ---- DB write ----------------------------------------------------
+        boolean dbOk = (tmpl.getId() == null) ? dao.insert(tmpl) : dao.update(tmpl);
+        if (!dbOk) return false;              // DB failed → do NOT write file
+
+        // ---- File write --------------------------------------------------
+        // after dao.insert the id field is populated, so file naming works
+        fileDao.save(tmpl);
+        return true;
     }
 
-    public boolean deleteTemplate(int id) { return dao.delete(id); }
+    /** Deletes from DB **and** from the file system. */
+    public boolean deleteTemplate(int id) {
+        Template tmpl = dao.findById(id);          // we need the id for the file name
+        boolean dbOk = dao.delete(id);
+        if (dbOk && tmpl != null) {
+            fileDao.delete(tmpl);
+        }
+        return dbOk;
+    }
 
     /* -----------------------------------------------------------------
        PUBLIC RENDERERS (used by the GUI)
@@ -189,6 +212,65 @@ public class TemplateService {
         } finally {
             pdf.close();
             doc.close();
+        }
+    }
+
+    /* -------------------------------------------------------------
+       plain‑text renderer
+       ------------------------------------------------------------- */
+    /**
+     * Render the template as a UTF‑8 plain‑text file.
+     *
+     * The body is processed with the same placeholder replacement that
+     * {@link #renderAsDocx(Template,Map)} and {@link #renderAsPdf(Template,Map)}
+     * use.  Logos are ignored – a text file cannot embed images.
+     *
+     * @param tmpl          the template (new or persisted)
+     * @param placeholders  map of ${PLACEHOLDER} → value
+     * @return the UTF‑8 encoded bytes of the resulting text
+     * @throws IOException  (kept for API symmetry – never thrown in practice)
+     */
+    public byte[] renderAsText(Template tmpl,
+                               Map<String, String> placeholders) throws IOException {
+        String body = tmpl.getContent() == null ? "" : tmpl.getContent();
+
+        // Apply the same placeholder logic as the DOCX renderer
+        if (placeholders != null) {
+            for (Map.Entry<String, String> e : placeholders.entrySet()) {
+                body = body.replace("${" + e.getKey() + "}", e.getValue());
+            }
+        }
+
+        // Return UTF‑8 bytes – the UI will write them directly to a .txt file
+        return body.getBytes(StandardCharsets.UTF_8);
+    }
+
+    //Helps load templates from start
+    public void syncTemplatesWithFilesystem() {
+        // Load both sides
+        List<Template> dbTemplates   = dao.findAll();
+        List<Template> fileTemplates = fileDao.findAll();
+
+        // Index DB by name (name is unique in the UI)
+        Map<String, Template> dbByName = dbTemplates.stream()
+                .collect(Collectors.toMap(Template::getName, t -> t, (a,b) -> a));
+
+        // Insert every file‑only template into the DB
+        for (Template fileTpl : fileTemplates) {
+            if (!dbByName.containsKey(fileTpl.getName())) {
+                // Insert → gets a new id → rewrite the file with the correct name
+                boolean inserted = dao.insert(fileTpl);
+                if (inserted) {
+                    fileDao.save(fileTpl);   // overwrite using the newly assigned id
+                }
+            }
+        }
+
+        // Ensure every DB template has a file representation
+        for (Template dbTpl : dbTemplates) {
+            if (!fileDao.exists(dbTpl.getId())) {
+                fileDao.save(dbTpl);
+            }
         }
     }
 

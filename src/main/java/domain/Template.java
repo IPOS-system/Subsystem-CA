@@ -1,32 +1,26 @@
 package domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * POJO that maps a row in the {@code Templates} table.
- *
- * <p>
- *   • {@code content} – plain‑text body (may be {@code null})<br>
- *   • {@code logoPaths} – ordered list of absolute PNG paths (may be empty)<br>
- * </p>
- *
- * The old Word‑doc fields (`binaryContent`, `filePath`) and the CSV
- * table field (`tableData`) have been removed because the UI no longer
- * supports them.
+ * Implements {@link Serializable} so it can be written to a .ser file.
  */
-public class Template {
+public class Template implements Serializable {
+    private static final long serialVersionUID = 1L;   // ← important for version‑safety
 
     private Integer id;                // DB PK – null for a brand‑new template
     private String  name;              // display name (must be unique)
-    private String  type;              // REMINDER / RECEIPT / INVOICE
+    private String  type;              // REMINDER / RECEIPT / INVOICE / OTHER
     private String  content;           // plain‑text body (may be null)
     private List<String> logoPaths = new ArrayList<>(); // ordered PNG list
 
     public Template() {}
 
     // -------------------------------------------------
-    // Getters / Setters
+    // Getters / Setters (unchanged)
     // -------------------------------------------------
     public Integer getId()                     { return id; }
     public void setId(Integer id)              { this.id = id; }
@@ -47,11 +41,7 @@ public class Template {
         if (path != null && !path.isBlank() && !logoPaths.contains(path))
             logoPaths.add(path);
     }
+    public void removeLogoPath(String path) { logoPaths.remove(path); }
 
-    public void removeLogoPath(String path) {
-        logoPaths.remove(path);
-    }
-
-    @Override
-    public String toString() { return name; }
+    @Override public String toString() { return name; }
 }

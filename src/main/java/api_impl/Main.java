@@ -63,6 +63,8 @@ public class Main {
                 timeService
         );
 
+        appController.getTemplateService().syncTemplatesWithFilesystem();
+
         appController.start();
     }
 }

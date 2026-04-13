@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class StockReportDAO {
 
-    private static final BigDecimal VAT_RATE = new BigDecimal("0.20"); // 20 %
+    private static final BigDecimal VAT_RATE = new BigDecimal("0.20"); // 20%
 
     public List<StockReportEntry> getStockReport() {
         String sql = """

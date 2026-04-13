@@ -60,6 +60,8 @@ public class Main {
                 orderService, templateService, catalogueService
         );
 
+        appController.getTemplateService().syncTemplatesWithFilesystem();
+
         appController.start();
     }
 }

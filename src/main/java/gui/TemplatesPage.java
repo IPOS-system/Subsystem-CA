@@ -91,7 +91,7 @@ public class TemplatesPage extends JPanel {
         JPanel leftPanel = new JPanel(new BorderLayout(5,5));
 
         JPanel filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        cmbFilterType = new JComboBox<>(new String[]{"ALL","REMINDER","RECEIPT","INVOICE"});
+        cmbFilterType = new JComboBox<>(new String[]{"ALL","REMINDER","RECEIPT","INVOICE","OTHER"});
         txtSearch = new JTextField(12);
         filterBar.add(new JLabel("Type:"));
         filterBar.add(cmbFilterType);
@@ -129,7 +129,7 @@ public class TemplatesPage extends JPanel {
         // Row 1 – type selector
         gc.gridx = 0; gc.gridy = 1;
         topFields.add(new JLabel("Type:"), gc);
-        cmbType = new JComboBox<>(new String[]{"REMINDER","RECEIPT","INVOICE"});
+        cmbType = new JComboBox<>(new String[]{"REMINDER","RECEIPT","INVOICE","OTHER"});
         gc.gridx = 1;
         topFields.add(cmbType, gc);
 
@@ -372,6 +372,7 @@ public class TemplatesPage extends JPanel {
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogTitle("Export template");
             chooser.setAcceptAllFileFilterUsed(false);
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("Text File (*.txt)", "txt"));
             chooser.addChoosableFileFilter(new FileNameExtensionFilter("Word Document (*.docx)", "docx"));
             chooser.addChoosableFileFilter(new FileNameExtensionFilter("PDF Document (*.pdf)", "pdf"));
 

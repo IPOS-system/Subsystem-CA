@@ -4,6 +4,8 @@ import domain.User;
 import gui.*;
 
 import java.awt.*;
+import java.sql.Time;
+
 import service.ReportService;
 
 
@@ -32,11 +34,14 @@ public class AppController {
     private SalesPage salesPage;
     private ReportsPage reportsPage;
     private DiscountPlansPage discountPlansPage;
+    private SettingsPanel settingsPage;
+    private TimeService timeService;
 
     public AppController(MainFrame mainFrame, LoginService loginService, Session session,
                          CustomerService customerService, ItemService itemService,
                          SaleService saleService, SaleService orderService,
-                         TemplateService templateService, CatalogueService catalogueService) {
+                         TemplateService templateService, CatalogueService catalogueService,
+                         TimeService timeService) {
         this.mainFrame = mainFrame;
         this.loginService = loginService;
         this.session = session;
@@ -47,6 +52,7 @@ public class AppController {
         this.catalogueService = catalogueService;
         this.templateService = templateService;
         this.reportService   = new ReportService();
+        this.timeService = new TimeService();
     }
 
     public void start() {
@@ -120,6 +126,11 @@ public class AppController {
         showPage("discount");
     }
 
+
+    public TimeService getTimeService() {
+        return timeService;
+    }
+
     private void addMainPages() {
 
         dashboardPage = new Dashboard(this);
@@ -131,6 +142,7 @@ public class AppController {
         salesPage = new SalesPage(this, saleService, itemService);
         reportsPage = new ReportsPage(this);
         discountPlansPage = new DiscountPlansPage(this);
+        settingsPage = new SettingsPanel(this);
 
         mainFrame.addPage("dashboard", dashboardPage);
         mainFrame.addPage("orders", ordersPage);
@@ -141,6 +153,7 @@ public class AppController {
         mainFrame.addPage("sales", salesPage);
         mainFrame.addPage("reports", reportsPage);
         mainFrame.addPage("discount", discountPlansPage);
+        mainFrame.addPage("settings", settingsPage);
     }
 
     public TemplateService getTemplateService() {

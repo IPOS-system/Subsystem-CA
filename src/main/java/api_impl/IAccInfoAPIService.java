@@ -1,14 +1,21 @@
 package api_impl;
 
 import api.IAccInfoAPI;
+import domain.OrderItem;
+import service.Result;
 
 import java.util.List;
 
 public class IAccInfoAPIService implements IAccInfoAPI {
     @Override
     public void sendLoginInfo(String username, String password) {
-        
+
     }
+
+    public Result sendOrder(List<OrderItem> orderItems){
+        return Result.fail("not done yet");
+    }
+
 
     @Override
     public String getAccountStatus(int userID) {

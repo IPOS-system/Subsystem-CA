@@ -41,6 +41,7 @@ public class Main {
         DatabaseSetup.initialiseDatabase();
 
         LoginService loginService = new LoginService();
+
         Session session = new Session();
         MainFrame mainFrame = new MainFrame();
         CustomerService customerService = new CustomerService();
@@ -51,13 +52,15 @@ public class Main {
         SaleService orderService = new SaleService(customerService, paymentService);
         TemplateService templateService = new TemplateService();
         CatalogueService catalogueService = new CatalogueService();
+        TimeService timeService = new TimeService();
 
 
 
         AppController appController = new AppController(
                 mainFrame, loginService, session,
                 customerService, itemService, saleService,
-                orderService, templateService, catalogueService
+                orderService, templateService, catalogueService,
+                timeService
         );
 
         appController.start();

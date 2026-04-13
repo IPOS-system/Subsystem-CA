@@ -18,7 +18,7 @@ public class MainFrame extends JFrame {
             ClassLoader cl = getClass().getClassLoader();
 
             URL bgUrl = cl.getResource("gradient.png");
-            URL logoUrl = cl.getResource("logo.png");
+            URL logoUrl = cl.getResource("cosymedLogo.png");
 
             if (bgUrl != null) {
                 backgroundImage = new ImageIcon(bgUrl).getImage();

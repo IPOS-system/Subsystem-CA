@@ -1,6 +1,7 @@
 package service;
 
 import api_impl.DatabaseConnection;
+import api_impl.IAccInfoAPIService;
 import dao.DebtsDAO;
 import dao.ItemDAO;
 import dao.SalesDAO;
@@ -27,6 +28,8 @@ public class SaleService {
 
     private  CustomerAccount currentCustomer;
 
+    private IAccInfoAPIService iAccInfoAPIService; //for sending orders to ipos sa
+
     public SaleService(CustomerService customerService, PaymentService paymentService){
         this.itemDAO = new ItemDAO();
         this.customerService = customerService;
@@ -35,6 +38,7 @@ public class SaleService {
         this.paymentService = paymentService;
         this.debtService = new DebtService();
         this.debtsDAO = new DebtsDAO();
+        this.iAccInfoAPIService = new IAccInfoAPIService();
     }
 
 
@@ -93,8 +97,22 @@ public class SaleService {
 
     //for orders with SA
     public Result placeOrder(){
+        // map basket -> order items
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (SaleItem saleItem : basket) {
+            orderItems.add(new OrderItem(
+                    saleItem.getItemId(),
+                    saleItem.getItemDescription(),
+                    saleItem.getQuantity(),
+                    saleItem.getUnitPrice(),
+                    saleItem.getOrderItemPrice()
+            ));
+        }
+
+        Result orderSendResult = iAccInfoAPIService.sendOrder(orderItems);
+        //now we send this to ipos sa and see what they say.
         basket.clear();
-        return Result.fail("not done yet");
+        return orderSendResult;
     }
 
     public List<CustomerAccount> getAllCustomers(){

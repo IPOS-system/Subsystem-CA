@@ -1,5 +1,9 @@
 package api;
 
+import com.mysql.cj.x.protobuf.MysqlxCrud;
+import domain.OrderItem;
+import service.Result;
+
 import java.util.List;
 
 public interface IAccInfoAPI {
@@ -10,6 +14,9 @@ public interface IAccInfoAPI {
 	 * @param password
 	 */
 	void sendLoginInfo(String username, String password);
+
+	Result sendOrder(List<OrderItem> orderItems);
+
 
 	/**
 	 * 

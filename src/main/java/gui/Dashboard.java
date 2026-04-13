@@ -68,6 +68,9 @@ public class Dashboard extends JPanel {
         JButton usersButton = new JButton("Users");
         adminButtons.add(usersButton);
 
+        JButton settingsButton = new JButton("Settings");
+        adminButtons.add(settingsButton);
+
         adminPanel.add(adminButtons, BorderLayout.NORTH);
 
         // Add columns
@@ -119,6 +122,8 @@ public class Dashboard extends JPanel {
         usersButton.addActionListener(e -> {
             appController.showPage("users");
         });
+        settingsButton.addActionListener(e ->
+                appController.showPage("settings"));
     }
 
     @Override

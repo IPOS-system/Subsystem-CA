@@ -1,40 +1,34 @@
 package api_impl;
 
 import api.ICatalogueAPI;
-import domain.Product;
+import domain.Item;
 
-import domain.SaleItem;
+import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.springframework.web.bind.annotation.*;
+import service.ItemService;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/catalogue")
 public class ICatalogueController {
 
-    private final ICatalogueAPI service = new ICatalogueAPIService();
+    private final ICatalogueAPI service ;
 
-    @GetMapping("/test")
-    public SaleItem test(){
-        SaleItem test= new SaleItem("001", "test", 5, BigDecimal.valueOf(4));
-
-        System.out.println("test was called in cataloge api. ");
-        return test;
+    public ICatalogueController(){
+        service = new ICatalogueAPIService();
     }
 
+//
+//    @GetMapping("/products")
+//    public List<Item> test(){
+//        return service.listProducts();
+//    }
+
     @GetMapping("/products")
-    public List<Product> listProducts() {
+    public List<Item> listProducts() {
         return service.listProducts();
     }
 
-    @GetMapping("/search")
-    public List<Product> search(@RequestParam String keyword) {
-        return service.searchProducts(keyword);
-    }
 
-    @GetMapping("/product/{id}")
-    public Product getProduct(@PathVariable String id) {
-        return service.getProductDetails(id);
-    }
 }

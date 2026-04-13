@@ -11,14 +11,31 @@ public class Item {
     private String unit;          // e.g. “Caps”, “Ml”
     private int    unitsInPack;   // how many units are inside a pack
     private BigDecimal packageCost; // price for ONE PACK
+    private int qtyInStock;
+    private int stockLimit;
+    private int markup;
+
+    public Item(String itemId, String description,String packageType, String unit, int unitsInPack,
+                BigDecimal packageCost, int qtyInStock, int stockLimit, int markup){
+        this.itemId = itemId;
+        this.description = description;
+        this.packageType =  packageType;
+        this.unit = unit;
+        this.unitsInPack = unitsInPack;
+        this.packageCost = packageCost;
+        this.qtyInStock = qtyInStock;
+        this.stockLimit = stockLimit;
+        this.markup = markup;
+    }
+
 
     //getters and setters
     public String getItemId() {
         return itemId;
     }
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
-    }
+//    public void setItemId(String itemId) {
+//        this.itemId = itemId;
+//    }
 
     public String getDescription() {
         return description;
@@ -58,5 +75,17 @@ public class Item {
     @Override
     public String toString() {
         return description + " (" + itemId + ")";
+    }
+
+    public int getQtyInStock() {
+        return qtyInStock;
+    }
+
+    public int getStockLimit() {
+        return stockLimit;
+    }
+
+    public int getMarkup() {
+        return markup;
     }
 }

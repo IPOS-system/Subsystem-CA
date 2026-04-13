@@ -25,6 +25,12 @@ public class LoginPage extends JPanel {
         JPasswordField passField = new JPasswordField();
 
 
+        //TODO remove for real demo, this only for ddebug
+        userField.setText("admin");
+        passField.setText("admin");
+
+
+
         loginBtn = new JButton("Login");
         JPanel form = new JPanel(new BorderLayout(10, 10));
         form.setPreferredSize(new Dimension(320, 180));

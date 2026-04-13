@@ -42,7 +42,7 @@ public class MainFrame extends JFrame {
         add(mainPanel);
 
         setTitle("IPOS CA");
-        setSize(800, 500);
+        setSize(1000, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setVisible(true);
@@ -77,4 +77,6 @@ public class MainFrame extends JFrame {
     public Image getLogoImage() {
         return logoImage;
     }
+
+
 }

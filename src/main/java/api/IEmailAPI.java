@@ -1,6 +1,7 @@
 package api;
 
 import domain.Email;
+import service.Result;
 
 public interface IEmailAPI {
 
@@ -8,6 +9,6 @@ public interface IEmailAPI {
 	 * 
 	 * @param email
 	 */
-	boolean sendEmail(Email email);
+	Result sendEmail(Email email);
 
 }

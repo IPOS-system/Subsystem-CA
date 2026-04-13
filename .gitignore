@@ -1,10 +1,10 @@
-# Ignore everything
-*
 
-# But NOT these:
-!.gitignore
-!pom.xml
-!src/
+.idea/
+*.iml
 
-# Inside src, track everything
-!src/**
+target/
+out/
+
+*.class
+*.log
+.DS_Store

@@ -1,11 +1,14 @@
 package gui;
 
+import domain.Item;
 import service.AppController;
 import service.ItemService;
+import service.Result;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.math.BigDecimal;
 
 public class StockPage extends JPanel {
 
@@ -16,7 +19,7 @@ public class StockPage extends JPanel {
 
 
     private JTable tbl;
-    private DefaultTableModel model;
+    private DefaultTableModel stockModel;
 
     private JTextField itemIdTxt;
     private JTextField descriptionTxt;
@@ -26,6 +29,8 @@ public class StockPage extends JPanel {
     private JTextField packageCostTxt;
     private JTextField quantityTxt;
     private JTextField stockLimitTxt;
+    private JTextField markupTxt;
+    private JTextField searchTxt;
 
     private JButton addBtn;
     private JButton updateQtyBtn;
@@ -33,6 +38,8 @@ public class StockPage extends JPanel {
     private JButton deliveryBtn;
     private JButton lowStockBtn;
     private JButton clearBtn;
+    private JButton searchBtn;
+    private JButton resetSearchBtn;
 
     public StockPage(AppController appController, ItemService itemService) {
         this.appController = appController;
@@ -50,7 +57,24 @@ public class StockPage extends JPanel {
         p.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         p.setOpaque(false);
 
-        model = new DefaultTableModel(
+        // --- search bar ---
+        JPanel searchPanel = new JPanel(new BorderLayout(5, 5));
+        searchTxt = new JTextField();
+        searchBtn = new JButton("search");
+        resetSearchBtn = new JButton("reset search");
+
+        searchPanel.add(new JLabel("search below quantity in stock:"), BorderLayout.WEST);
+        searchPanel.add(searchTxt, BorderLayout.CENTER);
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnPanel.add(searchBtn);
+        btnPanel.add(resetSearchBtn);
+
+        searchPanel.add(btnPanel, BorderLayout.EAST);
+//        searchPanel.add(searchBtn, BorderLayout.EAST);
+//        searchPanel.add(resetSearchBtn, BorderLayout.EAST);
+
+        stockModel = new DefaultTableModel(
                 new Object[]{
                         "item id",
                         "description",
@@ -59,7 +83,8 @@ public class StockPage extends JPanel {
                         "units/pack",
                         "cost",
                         "qty in stock",
-                        "stock limit"
+                        "stock limit",
+                        "markup"
                 }, 0
         ) {
             @Override
@@ -68,10 +93,16 @@ public class StockPage extends JPanel {
             }
         };
 
-        tbl = new JTable(model);
+        tbl = new JTable(stockModel);
+        tbl.getTableHeader().setReorderingAllowed(false);
+
+
+
+
+
         JScrollPane sp = new JScrollPane(tbl);
 
-        JPanel form = new JPanel(new GridLayout(6, 4, 10, 10));
+        JPanel form = new JPanel(new GridLayout(7, 4, 10, 10));
         form.setBorder(BorderFactory.createTitledBorder("manage stock"));
 
         itemIdTxt = new JTextField();
@@ -82,21 +113,26 @@ public class StockPage extends JPanel {
         packageCostTxt = new JTextField();
         quantityTxt = new JTextField();
         stockLimitTxt = new JTextField();
+        markupTxt =  new JTextField();
 
         addBtn = new JButton("add item");
         updateQtyBtn = new JButton("update quantity");
         removeBtn = new JButton("remove item");
-        deliveryBtn = new JButton("record delivery");
-        lowStockBtn = new JButton("low stock");
+        //deliveryBtn = new JButton("record delivery");
+        //lowStockBtn = new JButton("low stock");
         clearBtn = new JButton("clear");
 
         form.add(new JLabel("item id:"));
         form.add(itemIdTxt);
+        //itemIdTxt.setEditable(false);
+
         form.add(new JLabel("description:"));
         form.add(descriptionTxt);
+        //descriptionTxt.setEditable(false);
 
         form.add(new JLabel("package type:"));
         form.add(packageTypeTxt);
+
         form.add(new JLabel("unit:"));
         form.add(unitTxt);
 
@@ -107,22 +143,203 @@ public class StockPage extends JPanel {
 
         form.add(new JLabel("quantity:"));
         form.add(quantityTxt);
+
         form.add(new JLabel("stock limit:"));
         form.add(stockLimitTxt);
+
+        form.add(new JLabel("markup"));
+        form.add(markupTxt);
 
         form.add(addBtn);
         form.add(updateQtyBtn);
         form.add(removeBtn);
         form.add(clearBtn);
 
-        form.add(deliveryBtn);
-        form.add(lowStockBtn);
+        //form.add(deliveryBtn);
+        //form.add(lowStockBtn);
         form.add(new JLabel(""));
         form.add(new JLabel(""));
 
+        p.add(searchPanel, BorderLayout.NORTH);
         p.add(sp, BorderLayout.CENTER);
         p.add(form, BorderLayout.SOUTH);
 
+
+
+        updateTable();
+        bindTableSelection();
+        hookEvents();
+
         return p;
+    }
+
+    private void hookEvents(){
+        addBtn.addActionListener(e -> onAddBtn());
+        updateQtyBtn.addActionListener(e -> onModifyQtyBtn());
+        removeBtn.addActionListener(e -> onDeleteBtn());
+        clearBtn.addActionListener(e -> onClearBtn());
+        searchBtn.addActionListener(e -> onSearchBtn());
+        resetSearchBtn.addActionListener(e -> onResetSearchBtn());
+
+    }
+
+    private void onAddBtn(){
+        try {
+            String id = itemIdTxt.getText().trim();
+            String desc = descriptionTxt.getText().trim();
+            String pkgType = packageTypeTxt.getText().trim();
+            String unit = unitTxt.getText().trim();
+
+            int unitsInPack = Integer.parseInt(unitsInPackTxt.getText().trim());
+            BigDecimal cost = new BigDecimal(packageCostTxt.getText().trim());
+            int qty = Integer.parseInt(quantityTxt.getText().trim());
+            int stockLimit = Integer.parseInt(stockLimitTxt.getText().trim());
+            int markup = Integer.parseInt(markupTxt.getText().trim()); // or add a textbox if needed
+
+            Item item = new Item(id, desc, pkgType, unit, unitsInPack, cost, qty, stockLimit, markup);
+
+            Result res = itemService.addItemToStock(item);
+            JOptionPane.showMessageDialog(this, res.getMessage());
+            if(res.isSuccess()){
+                updateTable();
+            }
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Invalid input");
+        }
+    };
+
+    private void onModifyQtyBtn() {
+        try {
+            int row = tbl.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "select a row first");
+                return;
+            }
+
+            String itemId = itemIdTxt.getText().trim();
+            int newQty = Integer.parseInt(quantityTxt.getText().trim());
+
+            if (newQty < 0) {
+                JOptionPane.showMessageDialog(this, "qty must be >= 0");
+                return;
+            }
+
+            Result res = itemService.modifyQtyInStock(itemId, newQty);
+            JOptionPane.showMessageDialog(this, res.getMessage());
+
+            if (res.isSuccess()) {
+                updateTable();
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "invalid input");
+        }
+    }
+
+    private void onDeleteBtn() {
+        try {
+            int row = tbl.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "select a row first");
+                return;
+            }
+
+            String itemId = stockModel.getValueAt(row, 0).toString();
+
+            Result res = itemService.removeItemFromStock(itemId);
+            JOptionPane.showMessageDialog(this, res.getMessage());
+
+            if (res.isSuccess()) {
+                updateTable();
+                onClearBtn();
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "error deleting item");
+        }
+    }
+
+    private void onClearBtn(){
+        //updateTable();
+        itemIdTxt.setText("");
+        descriptionTxt.setText("");
+        packageTypeTxt.setText("");
+        unitTxt.setText("");
+        unitsInPackTxt.setText("");
+        packageCostTxt.setText("");
+        quantityTxt.setText("");
+        stockLimitTxt.setText("");
+        markupTxt.setText("");
+    }
+
+    private void onSearchBtn() {
+        try {
+            int threshold = Integer.parseInt(searchTxt.getText().trim());
+
+            stockModel.setRowCount(0);
+
+            for (Item i : itemService.findAll()) {
+                if (i.getQtyInStock() < threshold) {
+                    stockModel.addRow(new Object[]{
+                            i.getItemId(),
+                            i.getDescription(),
+                            i.getPackageType(),
+                            i.getUnit(),
+                            i.getUnitsInPack(),
+                            i.getPackageCost(),
+                            i.getQtyInStock(),
+                            i.getStockLimit(),
+                            i.getMarkup()
+                    });
+                }
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "invalid threshold");
+        }
+    }
+
+    private void onResetSearchBtn(){
+        searchTxt.setText("");
+        updateTable();
+    }
+
+    private void bindTableSelection() {
+        tbl.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = tbl.getSelectedRow();
+                if (row >= 0) {
+                    itemIdTxt.setText(stockModel.getValueAt(row, 0).toString());
+                    descriptionTxt.setText(stockModel.getValueAt(row, 1).toString());
+                    packageTypeTxt.setText(stockModel.getValueAt(row, 2).toString());
+                    unitTxt.setText(stockModel.getValueAt(row, 3).toString());
+                    unitsInPackTxt.setText(stockModel.getValueAt(row, 4).toString());
+                    packageCostTxt.setText(stockModel.getValueAt(row, 5).toString());
+                    quantityTxt.setText(stockModel.getValueAt(row, 6).toString());
+                    stockLimitTxt.setText(stockModel.getValueAt(row, 7).toString());
+                    markupTxt.setText(stockModel.getValueAt(row, 8).toString());
+                }
+            }
+        });
+    }
+
+    //reset aswell
+    private void updateTable(){
+        stockModel.setRowCount(0);
+        for(Item i : itemService.findAll()){
+            stockModel.addRow(new Object[]{
+                    i.getItemId(),
+                    i.getDescription(),
+                    i.getPackageType(),
+                    i.getUnit(),
+                    i.getUnitsInPack(),
+                    i.getPackageCost(),
+                    i.getQtyInStock(),
+                    i.getStockLimit(),
+                    i.getMarkup()
+            });
+        }
+
     }
 }

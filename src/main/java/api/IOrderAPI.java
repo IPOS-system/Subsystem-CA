@@ -1,6 +1,6 @@
 package api;
 
-import domain.Product;
+import domain.Item;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ public interface IOrderAPI {
 	 * 
 	 * @param order
 	 */
-	void sendOrder(List<Product> order);
+	void sendOrder(List<Item> order);
 
 	/**
 	 * 

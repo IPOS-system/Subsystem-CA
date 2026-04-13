@@ -1,22 +1,43 @@
 package service;
 
 import dao.CustomerAccountDAO;
+import dao.DebtsDAO;
+import dao.DiscountPlanDAO;
 import domain.CustomerAccount;
+import domain.DiscountPlan;
+import domain.DiscountTier;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.List;
 
 public class CustomerService {
 
     private final CustomerAccountDAO customerDao;
+    private final DiscountPlanDAO discountPlanDAO;
+    private final DebtsDAO debtsDao;
+
+
 
     public CustomerService() {
         this.customerDao = new CustomerAccountDAO();
+        this.discountPlanDAO = new DiscountPlanDAO();
+        this.debtsDao = new DebtsDAO();
+
     }
 
     public CustomerAccount findById(String id) {
         return customerDao.findById(id);
     }
+
+    public DiscountPlan getCustomerDiscountPlan (String customerId){
+        try{
+            return discountPlanDAO.getCustomerDiscountPlan(customerId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public Result createCustomerAccount(String accountId, String holderName, String contactName,
                                         String address, String phone, String creditText, String status) {

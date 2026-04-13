@@ -4,6 +4,8 @@ import domain.User;
 import gui.*;
 
 import java.awt.*;
+import service.ReportService;
+
 
 public class AppController {
 
@@ -16,6 +18,9 @@ public class AppController {
     private final SaleService orderService;
     private final CatalogueService catalogueService;
     private final TemplateService templateService;
+    private final ReportService reportService;
+
+
 
     private LoginPage loginPage;
     private Dashboard dashboardPage;
@@ -41,6 +46,7 @@ public class AppController {
         this.orderService = orderService;
         this.catalogueService = catalogueService;
         this.templateService = templateService;
+        this.reportService   = new ReportService();
     }
 
     public void start() {
@@ -140,4 +146,9 @@ public class AppController {
     public TemplateService getTemplateService() {
         return templateService;
     }
+    public ReportService getReportService() {
+        return reportService;
+    }
 }
+
+

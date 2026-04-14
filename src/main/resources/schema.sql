@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS LocalUser (
     user_id   INT AUTO_INCREMENT PRIMARY KEY,
     username  VARCHAR(50) NOT NULL UNIQUE,
     password  VARCHAR(255) NOT NULL,
-    role      VARCHAR(20) NOT NULL
+    role      VARCHAR(100) NOT NULL
     );
 
 INSERT IGNORE INTO LocalUser (username, password, role) VALUES
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS Monthly_Debts (
     debt_id               INT AUTO_INCREMENT PRIMARY KEY,
     account_id            VARCHAR(10) NOT NULL,
     debt_month            DATE NOT NULL,
-    due_date              DATE NOT NULL,
+    due_date              DATE,
     total_amount          DECIMAL(10,2) NOT NULL,
     remaining_amount      DECIMAL(10,2) NOT NULL,
     status_1stReminder    VARCHAR(10),

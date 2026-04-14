@@ -11,6 +11,7 @@ import api.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.Time;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -43,27 +44,29 @@ public class Main {
         LoginService loginService = new LoginService();
 
         Session session = new Session();
+
+        TimeService timeService = new TimeService();
+        AccountStatusService accountStatusService = new AccountStatusService();
         MainFrame mainFrame = new MainFrame();
-        CustomerService customerService = new CustomerService();
-        DebtService debtService = new DebtService();
+        DebtService debtService = new DebtService(timeService, accountStatusService);
+
+        CustomerService customerService = new CustomerService(debtService);
         PaymentService paymentService = new PaymentService(debtService);
-        SaleService saleService = new SaleService(customerService, paymentService);
+        SaleService saleService = new SaleService(customerService, paymentService,timeService, debtService);
         ItemService itemService = new ItemService();
-        SaleService orderService = new SaleService(customerService, paymentService);
+        SaleService orderService = new SaleService(customerService, paymentService,timeService, debtService);
         TemplateService templateService = new TemplateService();
         CatalogueService catalogueService = new CatalogueService();
-        TimeService timeService = new TimeService();
-
 
 
         AppController appController = new AppController(
                 mainFrame, loginService, session,
                 customerService, itemService, saleService,
                 orderService, templateService, catalogueService,
-                timeService
+                timeService, accountStatusService, paymentService
         );
 
-        appController.getTemplateService().syncTemplatesWithFilesystem();
+        //appController.getTemplateService().syncTemplatesWithFilesystem();
 
         appController.start();
     }

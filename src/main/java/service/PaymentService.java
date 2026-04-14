@@ -51,4 +51,26 @@ public class PaymentService {
 
     //public Result makeDebtRepayment()
 
+    public Result makeDebtRepayment(CustomerAccount customer, BigDecimal amount) {
+        if (customer == null) {
+            return Result.fail("no customer account selected");
+        }
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return Result.fail("repayment amount must be greater than 0");
+        }
+
+        BigDecimal outstanding = debtService.getOutstandingDebt(customer.getAccountId());
+
+        if (outstanding.compareTo(BigDecimal.ZERO) <= 0) {
+            return Result.fail("customer has no outstanding debt");
+        }
+
+        if (amount.compareTo(outstanding) > 0) {
+            return Result.fail("repayment cannot exceed outstanding debt");
+        }
+
+        return debtService.applyPayment(customer.getAccountId(), amount);
+    }
+
 }

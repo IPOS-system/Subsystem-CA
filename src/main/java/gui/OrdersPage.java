@@ -28,6 +28,8 @@ public class OrdersPage extends JPanel {
     JButton searchBtn;
     JButton clearBtn;
 
+    JButton clearSearchBtn;
+
     private final CatalogueService catalogueService;
     private final SaleService orderService;
     private final AppController appController;
@@ -61,10 +63,12 @@ public class OrdersPage extends JPanel {
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         searchField = new JTextField(20);
         searchBtn = new JButton("Search");
+        clearSearchBtn = new JButton("Clear");
 
         searchPanel.add(new JLabel("Search:"));
         searchPanel.add(searchField);
         searchPanel.add(searchBtn);
+        searchPanel.add(clearSearchBtn);
 
         catalogueModel = new DefaultTableModel(
                 new Object[]{"Item ID", "Description", "Pack type", "Unit", "Units/Pack", "Pack cost"}, 0) {
@@ -131,12 +135,42 @@ public class OrdersPage extends JPanel {
             });
         }
     }
+    private void filterCatalogue() {
+        String text = searchField.getText().trim().toLowerCase();
+
+        catalogueModel.setRowCount(0);
+
+        List<Item> items = catalogueService.findAll();
+
+        for (Item i : items) {
+            if (text.isEmpty()
+                    || i.getItemId().toLowerCase().contains(text)
+                    || i.getDescription().toLowerCase().contains(text)) {
+
+                catalogueModel.addRow(new Object[]{
+                        i.getItemId(),
+                        i.getDescription(),
+                        i.getPackageType(),
+                        i.getUnit(),
+                        i.getUnitsInPack(),
+                        i.getPackageCost()
+                });
+            }
+        }
+    }
 
     private void hookEvents() {
         addItemBtn.addActionListener(e -> onAddItem());
         removeItemBtn.addActionListener(e -> onRemoveItem());
         placeOrderBtn.addActionListener(e -> onPlaceOrder());
         clearBtn.addActionListener(e -> onClearBtn());
+
+        searchBtn.addActionListener(e -> filterCatalogue());
+        clearSearchBtn.addActionListener(e -> {
+            searchField.setText("");
+            loadCatalogue();
+        });
+        searchField.addActionListener(e -> filterCatalogue());
     }
 
     private void updateBasketTable() {

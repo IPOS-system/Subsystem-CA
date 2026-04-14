@@ -6,6 +6,7 @@ import service.Result;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -149,6 +150,59 @@ public class DebtsDAO {
             addToDebt(con, debtId, amount);
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+    public Result applyFirstReminders(LocalDate appDate) {
+        String sql = """
+        UPDATE Monthly_Debts
+        SET status_1stReminder = 'due',
+            first_reminder_date = ?
+        WHERE remaining_amount > 0
+          AND status_1stReminder IS NULL
+          AND ? >= DATE_ADD(
+                    DATE_ADD(LAST_DAY(debt_month), INTERVAL 1 DAY),
+                    INTERVAL 14 DAY
+                  )
+        """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            Date sqlDate = Date.valueOf(appDate);
+            ps.setDate(1, sqlDate);
+            ps.setDate(2, sqlDate);
+
+            int updated = ps.executeUpdate();
+            return Result.success(updated + " first reminders applied");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Result.fail(e.getMessage());
+        }
+    }
+    public Result applySecondReminders(LocalDate appDate) {
+        String sql = """
+        UPDATE Monthly_Debts
+        SET status_2ndReminder = 'due',
+            second_reminder_date = ?
+        WHERE remaining_amount > 0
+          AND status_2ndReminder IS NULL
+          AND ? >= LAST_DAY(DATE_ADD(debt_month, INTERVAL 1 MONTH))
+        """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            Date sqlDate = Date.valueOf(appDate);
+            ps.setDate(1, sqlDate);
+            ps.setDate(2, sqlDate);
+
+            int updated = ps.executeUpdate();
+            return Result.success(updated + " second reminders applied");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Result.fail(e.getMessage());
         }
     }
 

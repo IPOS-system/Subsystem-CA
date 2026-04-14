@@ -16,15 +16,16 @@ import java.util.List;
 public class SalesPage extends JPanel {
 
 
-    //JComboBox<String> customerTypeCmb; // "Account holder" | "Occasional"
-    //JTextField       accountIdTxt;    // enabled only for account‑holder
-    JTable basketTable;       // basket
-    DefaultTableModel basketModel;       // model for the basket tabl;e
-    JLabel            totalLbl;        // running total
+    //JComboBox<String> customerTypeCmb; //
+    //JTextField       accountIdTxt;    //
+    JTable basketTable;       //basket
+    DefaultTableModel basketModel;       //model for the basket tabl;e
+    JLabel            totalLbl;        //running total
     JLabel              currentCustLbl;
     JButton           addItemBtn;
     JButton           removeItemBtn;
     JButton           checkoutBtn;
+    JButton clearSearchBtn;
 
     JTable catalogueTable;
     DefaultTableModel catalogueModel;
@@ -67,7 +68,7 @@ public class SalesPage extends JPanel {
 
         //basket table (RIGHT)
         basketModel = new DefaultTableModel(
-                new Object[]{"Item ID", "Description", "Qty", "Unit price", "Line total"},
+                new Object[]{"Item ID", "Description", "Qty", "Unit price", "total"},
                 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -95,14 +96,18 @@ public class SalesPage extends JPanel {
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         searchField = new JTextField(20);
         searchBtn = new JButton("Search");
+        clearSearchBtn = new JButton("Clear");
 
         searchPanel.add(new JLabel("Search:"));
         searchPanel.add(searchField);
         searchPanel.add(searchBtn);
 
+        searchPanel.add(searchBtn);
+        searchPanel.add(clearSearchBtn); // <- add this
+
         // catalogue table (LEFT)
         catalogueModel = new DefaultTableModel(
-                new Object[]{"Item ID", "Description", "Pack type", "Unit", "Units/Pack", "Pack cost"}, 0) {
+                new Object[]{"Item ID", "Description", "Pack type", "Unit", "Units/Pack", "Pack cost", "QTY in stock"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
@@ -130,7 +135,7 @@ public class SalesPage extends JPanel {
         // split pane
         JSplitPane splitPane = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT,
-                cataloguePanel,                 // <-- now includes search bar
+                cataloguePanel,                 //now includes search bar
                 new JScrollPane(basketTable)
         );
         splitPane.setResizeWeight(0.5);
@@ -180,8 +185,34 @@ public class SalesPage extends JPanel {
                     i.getPackageType(),
                     i.getUnit(),
                     i.getUnitsInPack(),
-                    i.getPackageCost()
+                    i.getPackageCost(),
+                    i.getQtyInStock()
             });
+        }
+    }
+
+    private void filterCatalogue() {
+        String text = searchField.getText().trim().toLowerCase();
+
+        catalogueModel.setRowCount(0);
+
+        List<Item> items = itemService.findAll();
+
+        for (Item i : items) {
+            if (text.isEmpty() ||
+                    i.getItemId().toLowerCase().contains(text) ||
+                    i.getDescription().toLowerCase().contains(text)) {
+
+                catalogueModel.addRow(new Object[]{
+                        i.getItemId(),
+                        i.getDescription(),
+                        i.getPackageType(),
+                        i.getUnit(),
+                        i.getUnitsInPack(),
+                        i.getPackageCost(),
+                        i.getQtyInStock()
+                });
+            }
         }
     }
 
@@ -194,6 +225,13 @@ public class SalesPage extends JPanel {
         clearBtn.addActionListener(e -> onClearBtn());
         selectCustomerBtn.addActionListener(e -> onSelectCustomer());
         noAccBtn.addActionListener(e -> onNoAccBtn());
+
+        searchBtn.addActionListener(e -> filterCatalogue());
+        clearSearchBtn.addActionListener(e -> {
+            searchField.setText("");
+            loadCatalogue();
+        });
+
     }
 
     private PaymentInfo showPaymentDialog() {
@@ -341,6 +379,11 @@ public class SalesPage extends JPanel {
         PaymentInfo paymentMethod = showPaymentDialog(); //get payment meth
         //TODO null pointer exception
 
+        if(paymentMethod == null){
+            JOptionPane.showMessageDialog(this, "no payment method selected, try again");
+            return;
+        }
+
         Result saleResult = saleService.placeSale(paymentMethod);
         JOptionPane.showMessageDialog(this, saleResult.getMessage());
 
@@ -348,13 +391,8 @@ public class SalesPage extends JPanel {
         recalculateTotal();
         updateBasketTable();
         recalculateTotal();
+        loadCatalogue();
 
-
-
-        //payment handling, reciet, statement
-        JOptionPane.showMessageDialog(this,
-                "Checkout logic not implemented yet.", "Info",
-                JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void onClearBtn(){

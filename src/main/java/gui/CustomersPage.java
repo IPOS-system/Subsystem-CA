@@ -4,12 +4,14 @@ package gui;
 import domain.CustomerAccount;
 import service.AppController;
 import service.CustomerService;
+import service.PaymentService;
 import service.Result;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 //this is refactored into customerspage and customerservice.
@@ -31,19 +33,27 @@ public class CustomersPage extends JPanel {
     private JTextField addressTxt;
     private JTextField phoneTxt;
     private JTextField creditLimitTxt;
-    private JTextField agreedDiscountTxt;   // shows fixed / tiered
+    private JTextField agreedDiscountTxt;   //shows fixed/tiered
     private JComboBox<String> statusDrop;
 
     private JButton addBtn;
     private JButton delBtn;
     private JButton clrBtn;
+    private JButton genFirstReminder;
+    private JButton genSecondReminder;
+
+    private JButton makePaymentBtn;
 
     private JButton updBtn;
     private JButton discountBtn;
 
-    public CustomersPage(AppController appController, CustomerService customerService) {
+    private PaymentService paymentService;
+
+    public CustomersPage(AppController appController, CustomerService customerService, PaymentService paymentService) {
         this.appController = appController;
         this.customerService = customerService;
+
+        this.paymentService = paymentService;
 
         setLayout(new BorderLayout());
 
@@ -68,7 +78,8 @@ public class CustomersPage extends JPanel {
                         "phone",
                         "credit limit",
                         "discount plan",
-                        "status"
+                        "status",
+                        "balance"
                 }, 0
         ) {
             @Override
@@ -80,7 +91,7 @@ public class CustomersPage extends JPanel {
         tbl = new JTable(model);
         JScrollPane sp = new JScrollPane(tbl);
 
-        JPanel form = new JPanel(new GridLayout(6, 4, 10, 10));
+        JPanel form = new JPanel(new GridLayout(0, 4, 10, 10));
         form.setBorder(BorderFactory.createTitledBorder("manage customer accounts"));
 
         accountIdTxt = new JTextField();
@@ -101,6 +112,9 @@ public class CustomersPage extends JPanel {
         addBtn = new JButton("add account");
         delBtn = new JButton("delete account");
         clrBtn = new JButton("clear");
+        genFirstReminder = new JButton("Generate 1st Rem");
+        genSecondReminder = new JButton("Generate 2nd Rem");
+        makePaymentBtn = new JButton("make payment");
 
         updBtn = new JButton("update details");
         discountBtn = new JButton("view/edit discount plans");
@@ -131,6 +145,11 @@ public class CustomersPage extends JPanel {
         form.add(clrBtn);
 
         form.add(discountBtn);
+
+        form.add(genFirstReminder);
+        form.add(genSecondReminder);
+        form.add(makePaymentBtn);
+
         form.add(new JLabel(""));
         form.add(new JLabel(""));
         form.add(new JLabel(""));
@@ -241,6 +260,43 @@ public class CustomersPage extends JPanel {
             }
         });
 
+        makePaymentBtn.addActionListener(e -> {
+            CustomerAccount customer = customerService.findById(accountIdTxt.getText());
+            if (customer == null) {
+                JOptionPane.showMessageDialog(this, "Select a customer first.");
+                return;
+            }
+
+            String input = JOptionPane.showInputDialog(this,
+                    "Enter repayment amount for " + customer.getAccountHolderName() + ":");
+
+            if (input == null) {
+                return; //user cancelled
+            }
+
+            //if account in default, manager requred to fix it.
+            if("in default".equals(customer.getAccountStatus()) && !("Director of Operations/Manager".equals(appController.getCurrentUser().getRole()))){
+
+                JOptionPane.showMessageDialog(this, "manager action required");
+                return;
+            }
+
+            try {
+                BigDecimal amount = new BigDecimal(input.trim());
+
+                Result result = paymentService.makeDebtRepayment(customer, amount);
+
+                JOptionPane.showMessageDialog(this, result.getMessage());
+
+                if (result.isSuccess()) {
+                    loadCustomersIntoTable();
+                }
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Enter a valid amount.");
+            }
+        });
+
         discountBtn.addActionListener(e ->{
             String accountId = accountIdTxt.getText();
             if(accountId.isEmpty()){
@@ -265,7 +321,8 @@ public class CustomersPage extends JPanel {
                     c.getPhone(),
                     c.getCreditLimit(),
                     c.getDiscountPlanType(),
-                    c.getAccountStatus()
+                    c.getAccountStatus(),
+                    customerService.getOutstandingDebt(c.getAccountId())
             });
         }
     }

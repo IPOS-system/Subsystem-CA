@@ -15,15 +15,18 @@ public class CustomerService {
 
     private final CustomerAccountDAO customerDao;
     private final DiscountPlanDAO discountPlanDAO;
-    private final DebtsDAO debtsDao;
+    private final DebtService debtService;
 
 
 
-    public CustomerService() {
+    public CustomerService(DebtService debtService) {
         this.customerDao = new CustomerAccountDAO();
         this.discountPlanDAO = new DiscountPlanDAO();
-        this.debtsDao = new DebtsDAO();
+        this.debtService = debtService;
+    }
 
+    public BigDecimal getOutstandingDebt(String id){
+        return debtService.getOutstandingDebt(id);
     }
 
     public CustomerAccount findById(String id) {

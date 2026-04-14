@@ -6,7 +6,9 @@ import dao.DebtsDAO;
 import dao.ItemDAO;
 import dao.SalesDAO;
 import domain.*;
+import jdk.management.jfr.RecordingInfo;
 
+import javax.swing.*;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -27,18 +29,21 @@ public class SaleService {
     private final PaymentService paymentService;
 
     private  CustomerAccount currentCustomer;
+    private ReceiptService receiptService;
 
     private IAccInfoAPIService iAccInfoAPIService; //for sending orders to ipos sa
 
-    public SaleService(CustomerService customerService, PaymentService paymentService){
+    public SaleService(CustomerService customerService, PaymentService paymentService, TimeService timeService, DebtService debtService){
         this.itemDAO = new ItemDAO();
         this.customerService = customerService;
         this.currentCustomer = null;
         this.salesDAO = new SalesDAO();
         this.paymentService = paymentService;
-        this.debtService = new DebtService();
+        this.debtService = debtService;
         this.debtsDAO = new DebtsDAO();
         this.iAccInfoAPIService = new IAccInfoAPIService();
+        this.receiptService = new ReceiptService(new TemplateService(), timeService);
+
     }
 
 
@@ -184,6 +189,7 @@ public class SaleService {
             }
         }
 
+
         BigDecimal total = getTotal();
 
         // 2. validate payment
@@ -195,17 +201,24 @@ public class SaleService {
         Connection con = null;
 
         try {
+
+            String accountId = (currentCustomer != null) ? currentCustomer.getAccountId() : null;
+            String customerName = (currentCustomer != null) ? currentCustomer.getContactName() : "Walk-in Customer";
+
             con = DatabaseConnection.getConnection(); //use sam con for transactions
             con.setAutoCommit(false);
 
             Integer debtId = null; //nullable
             //handle account debt
             if ("account".equals(paymentMethod.method)) {
-                debtId = debtService.recordSaleDebt(con, currentCustomer.getAccountId(), total);
+                if (accountId == null) {
+                    return Result.fail("account payment requires a customer account");
+                }
+                debtId = debtService.recordSaleDebt(con, accountId, total);
             }
 
             // 3. create sale
-            int saleId = salesDAO.createSale(con, currentCustomer.getAccountId(), total, paymentMethod.method, debtId);
+            int saleId = salesDAO.createSale(con, accountId, total, paymentMethod.method, debtId);
 
             // 4. insert items + update stock
             for (SaleItem i : basket) {
@@ -218,9 +231,11 @@ public class SaleService {
 
 
             con.commit();
+
+            String reciept = receiptService.createReceipt(String.valueOf(saleId),customerName , basket);
             basket.clear();
 
-            return Result.success("order placed");
+            return Result.success(reciept);
 
         } catch (Exception e) {
             try {

@@ -21,6 +21,7 @@ public class AppController {
     private final CatalogueService catalogueService;
     private final TemplateService templateService;
     private final ReportService reportService;
+    private final PaymentService paymentService;
 
 
 
@@ -36,12 +37,14 @@ public class AppController {
     private DiscountPlansPage discountPlansPage;
     private SettingsPanel settingsPage;
     private TimeService timeService;
+    private AccountStatusService accountStatusService;
 
     public AppController(MainFrame mainFrame, LoginService loginService, Session session,
                          CustomerService customerService, ItemService itemService,
                          SaleService saleService, SaleService orderService,
                          TemplateService templateService, CatalogueService catalogueService,
-                         TimeService timeService) {
+                         TimeService timeService, AccountStatusService accountStatusService,
+                         PaymentService paymentService) {
         this.mainFrame = mainFrame;
         this.loginService = loginService;
         this.session = session;
@@ -52,7 +55,9 @@ public class AppController {
         this.catalogueService = catalogueService;
         this.templateService = templateService;
         this.reportService   = new ReportService();
-        this.timeService = new TimeService();
+        this.timeService = timeService;
+        this.accountStatusService = accountStatusService;
+        this.paymentService =  paymentService;
     }
 
     public void start() {
@@ -136,13 +141,13 @@ public class AppController {
         dashboardPage = new Dashboard(this);
         ordersPage = new OrdersPage(this, orderService, catalogueService);
         usersPage = new UsersPage(this);
-        customersPage = new CustomersPage(this, customerService);
+        customersPage = new CustomersPage(this, customerService, paymentService);
         templatesPage = new TemplatesPage(this);
         stockPage = new StockPage(this, itemService);
         salesPage = new SalesPage(this, saleService, itemService);
         reportsPage = new ReportsPage(this);
         discountPlansPage = new DiscountPlansPage(this);
-        settingsPage = new SettingsPanel(this);
+        settingsPage = new SettingsPanel(this, accountStatusService );
 
         mainFrame.addPage("dashboard", dashboardPage);
         mainFrame.addPage("orders", ordersPage);

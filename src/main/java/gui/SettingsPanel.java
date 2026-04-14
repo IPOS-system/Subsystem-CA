@@ -1,5 +1,6 @@
 package gui;
 
+import service.AccountStatusService;
 import service.AppController;
 import service.TimeService;
 
@@ -13,13 +14,15 @@ public class SettingsPanel extends JPanel {
 
     private final AppController controller;
     private final TimeService timeService;
+    private final AccountStatusService accountStatusService;
 
     private JLabel modeLabel;
     private JSpinner dateSpinner;
 
-    public SettingsPanel(AppController controller) {
+    public SettingsPanel(AppController controller, AccountStatusService accountStatusService) {
         this.controller = controller;
         this.timeService = controller.getTimeService();
+        this.accountStatusService = accountStatusService;
 
         setLayout(new BorderLayout());
 
@@ -77,6 +80,8 @@ public class SettingsPanel extends JPanel {
         applyBtn.addActionListener(e -> {
             LocalDate selected = getSpinnerDate();
             timeService.setVirtualDate(selected);
+            accountStatusService.refreshStatuses(selected); //refreshhhh
+
             updateLabel();
         });
 

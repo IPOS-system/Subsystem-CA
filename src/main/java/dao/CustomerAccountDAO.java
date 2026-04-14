@@ -192,4 +192,81 @@ public class CustomerAccountDAO {
             return false;
         }
     }
+
+    public boolean markAccountsInDefault() {
+        String sql = """
+        UPDATE Customers c
+        SET c.account_status = 'in default'
+        WHERE c.account_status <> 'closed'
+          AND EXISTS (
+              SELECT 1
+              FROM Monthly_Debts md
+              WHERE md.account_id = c.account_id
+                AND md.remaining_amount > 0
+                AND md.status_2ndReminder = 'due'
+          )
+        """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            return ps.executeUpdate() >= 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean markAccountsSuspended() {
+        String sql = """
+        UPDATE Customers c
+        SET c.account_status = 'suspended'
+        WHERE c.account_status NOT IN ('closed', 'in default')
+          AND EXISTS (
+              SELECT 1
+              FROM Monthly_Debts md
+              WHERE md.account_id = c.account_id
+                AND md.remaining_amount > 0
+                AND md.status_1stReminder = 'due'
+          )
+        """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            return ps.executeUpdate() >= 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean markAccountsActiveIfClear() {
+        String sql = """
+    UPDATE Customers c
+    SET c.account_status = 'active'
+    WHERE c.account_status IN ('suspended', 'in default')
+      AND NOT EXISTS (
+          SELECT 1
+          FROM Monthly_Debts md
+          WHERE md.account_id = c.account_id
+            AND md.remaining_amount > 0
+            AND (md.status_1stReminder = 'due' OR md.status_2ndReminder = 'due')
+      )
+    """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            return ps.executeUpdate() >= 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
 }

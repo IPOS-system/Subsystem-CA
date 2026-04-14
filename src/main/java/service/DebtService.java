@@ -11,11 +11,13 @@ import java.util.List;
 
 public class DebtService {
     private final DebtsDAO debtDAO;
-
-    public DebtService(){
+    private final TimeService timeService;
+    private final AccountStatusService accountStatusService;
+    public DebtService(TimeService timeService, AccountStatusService accountStatusService){
         this.debtDAO = new DebtsDAO();
+        this.timeService = timeService;
+        this.accountStatusService = accountStatusService;
     }
-
 
     public BigDecimal getOutstandingDebt(String accountId){
         BigDecimal totalOutstanding = BigDecimal.ZERO;
@@ -27,8 +29,8 @@ public class DebtService {
 
     //if its there return id, if not create and then return id
     public int recordSaleDebt(Connection con, String accountId, BigDecimal amount) {
-        Date month = Date.valueOf(LocalDate.now().withDayOfMonth(1));
-        Date dueDate = Date.valueOf(LocalDate.now().plusDays(30));
+        Date month = Date.valueOf(timeService.today().withDayOfMonth(1)); //first
+        Date dueDate = null;
 
         DebtRecord debt = debtDAO.getCurrentMonthDebt(con, accountId, month);
 
@@ -71,7 +73,7 @@ public class DebtService {
                 remainingPayment = BigDecimal.ZERO;
             }
         }
-
+        accountStatusService.refreshStatuses(timeService.today());
         return Result.success("payment applied");
     }
 

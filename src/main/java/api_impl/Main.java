@@ -50,20 +50,27 @@ public class Main {
         MainFrame mainFrame = new MainFrame();
         DebtService debtService = new DebtService(timeService, accountStatusService);
 
+        SAService saService = new SAService();
+        //saService.connect("city", "northampton");
+
+
+
         CustomerService customerService = new CustomerService(debtService);
         PaymentService paymentService = new PaymentService(debtService);
-        SaleService saleService = new SaleService(customerService, paymentService,timeService, debtService);
+        SaleService saleService = new SaleService(customerService, paymentService,timeService, debtService,saService);
         ItemService itemService = new ItemService();
-        SaleService orderService = new SaleService(customerService, paymentService,timeService, debtService);
+        SaleService orderService = new SaleService(customerService, paymentService,timeService, debtService, saService);
         TemplateService templateService = new TemplateService();
         CatalogueService catalogueService = new CatalogueService();
+
 
 
         AppController appController = new AppController(
                 mainFrame, loginService, session,
                 customerService, itemService, saleService,
                 orderService, templateService, catalogueService,
-                timeService, accountStatusService, paymentService
+                timeService, accountStatusService, paymentService,
+                saService
         );
 
         //appController.getTemplateService().syncTemplatesWithFilesystem();

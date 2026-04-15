@@ -31,12 +31,12 @@ public class OrdersPage extends JPanel {
     JButton clearSearchBtn;
 
     private final CatalogueService catalogueService;
-    private final SaleService orderService;
+    private final SaleService saleService;
     private final AppController appController;
 
-    public OrdersPage(AppController appController, SaleService orderService, CatalogueService catalogueService) {
+    public OrdersPage(AppController appController, SaleService saleService, CatalogueService catalogueService) {
         this.appController = appController;
-        this.orderService = orderService;
+        this.saleService = saleService;
         this.catalogueService = catalogueService;
 
         setLayout(new BorderLayout());
@@ -44,6 +44,46 @@ public class OrdersPage extends JPanel {
         add(new HeaderPanel(appController), BorderLayout.NORTH);
         add(new BottomPanel(appController), BorderLayout.SOUTH);
         add(makeCentrePanel(), BorderLayout.CENTER);
+
+
+
+
+    }
+
+    private Result promptForSALogin(Component parent) {
+        while (true) {
+            JTextField usernameField = new JTextField(15);
+            JPasswordField passwordField = new JPasswordField(15);
+
+            JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
+            panel.add(new JLabel("SA Username:"));
+            panel.add(usernameField);
+            panel.add(new JLabel("SA Password:"));
+            panel.add(passwordField);
+
+            int result = JOptionPane.showConfirmDialog(
+                    parent,
+                    panel,
+                    "Login to SA",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE
+            );
+
+            if (result != JOptionPane.OK_OPTION) {
+                return Result.fail("chose nothing. ");
+            }
+
+            String username = usernameField.getText().trim();
+            String password = new String(passwordField.getPassword());
+
+            if (username.isBlank() || password.isBlank()) {
+                JOptionPane.showMessageDialog(parent, "Enter username and password.");
+                continue;
+            }
+
+            return saleService.connect(username, password);
+
+        }
     }
 
     private JPanel makeCentrePanel() {
@@ -176,7 +216,7 @@ public class OrdersPage extends JPanel {
     private void updateBasketTable() {
         basketModel.setRowCount(0);
 
-        for (SaleItem item : orderService.getBasket()) {
+        for (SaleItem item : saleService.getBasket()) {
             basketModel.addRow(new Object[]{
                     item.getItemId(),
                     item.getItemDescription(),
@@ -201,7 +241,7 @@ public class OrdersPage extends JPanel {
             String itemId = catalogueTable.getValueAt(row, 0).toString();
             Item item = catalogueService.findById(itemId);
 
-            Result res = orderService.addItemToBasket(item, qty);
+            Result res = saleService.addItemToBasket(item, qty);
             updateBasketTable();
             recalculateTotal();
 
@@ -218,7 +258,7 @@ public class OrdersPage extends JPanel {
         int row = basketTable.getSelectedRow();
         if (row < 0) return;
 
-        orderService.removeItemFromBasket(basketTable.getValueAt(row, 0).toString());
+        saleService.removeItemFromBasket(basketTable.getValueAt(row, 0).toString());
         updateBasketTable();
         recalculateTotal();
     }
@@ -226,7 +266,7 @@ public class OrdersPage extends JPanel {
     private void onPlaceOrder() {
         if (basketModel.getRowCount() == 0) return;
 
-        Result res = orderService.placeOrder();
+        Result res = saleService.placeOrder();
         JOptionPane.showMessageDialog(this, res.getMessage());
 
         if (res.isSuccess()) {
@@ -236,13 +276,19 @@ public class OrdersPage extends JPanel {
     }
 
     private void onClearBtn(){
-        orderService.clearBasket();
+        saleService.clearBasket();
         updateBasketTable();
         recalculateTotal();
     }
 
     private void recalculateTotal() {
-        BigDecimal total = orderService.getTotal();
+        BigDecimal total = saleService.getTotal();
         totalLbl.setText("Total: £" + total.setScale(2, RoundingMode.HALF_UP));
+    }
+
+    public void refresh() {
+        if(!saleService.isConnectedtoSA()){
+            JOptionPane.showMessageDialog(this, promptForSALogin(this ).getMessage());
+        }
     }
 }

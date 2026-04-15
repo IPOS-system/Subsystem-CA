@@ -1,6 +1,7 @@
 package api;
 
 import com.mysql.cj.x.protobuf.MysqlxCrud;
+import domain.LoginInfo;
 import domain.OrderItem;
 import service.Result;
 
@@ -13,7 +14,7 @@ public interface IAccInfoAPI {
 	 * @param username
 	 * @param password
 	 */
-	void sendLoginInfo(String username, String password);
+	LoginInfo sendLoginInfo(String username, String password);
 
 	Result sendOrder(List<OrderItem> orderItems);
 

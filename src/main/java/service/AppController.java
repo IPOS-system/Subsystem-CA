@@ -1,5 +1,6 @@
 package service;
 
+import api_impl.SAService;
 import domain.User;
 import gui.*;
 
@@ -39,12 +40,14 @@ public class AppController {
     private TimeService timeService;
     private AccountStatusService accountStatusService;
 
+    private SAService saService;
+
     public AppController(MainFrame mainFrame, LoginService loginService, Session session,
                          CustomerService customerService, ItemService itemService,
                          SaleService saleService, SaleService orderService,
                          TemplateService templateService, CatalogueService catalogueService,
                          TimeService timeService, AccountStatusService accountStatusService,
-                         PaymentService paymentService) {
+                         PaymentService paymentService, SAService saService) {
         this.mainFrame = mainFrame;
         this.loginService = loginService;
         this.session = session;
@@ -93,7 +96,7 @@ public class AppController {
         if (pageName.equals("sales") && salesPage != null) {
             salesPage.refresh();
         } else if (pageName.equals("orders") && ordersPage != null) {
-            //ordersPage.refresh();
+            ordersPage.refresh();
         } else if (pageName.equals("stock") && stockPage != null) {
             //stockPage.refresh();
         } else if (pageName.equals("customers") && customersPage != null) {

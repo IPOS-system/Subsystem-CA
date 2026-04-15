@@ -4,6 +4,7 @@ import api.IPaymentAPI;
 import api_impl.DatabaseConnection;
 import api_impl.IAccInfoAPIService;
 import api_impl.IPaymentAPIService;
+import api_impl.SAService;
 import dao.DebtsDAO;
 import dao.ItemDAO;
 import dao.SalesDAO;
@@ -39,7 +40,7 @@ public class SaleService {
 
     public TimeService timeService ;
 
-    public SaleService(CustomerService customerService, PaymentService paymentService, TimeService timeService, DebtService debtService){
+    public SaleService(CustomerService customerService, PaymentService paymentService, TimeService timeService, DebtService debtService, SAService saService){
         this.itemDAO = new ItemDAO();
         this.customerService = customerService;
         this.currentCustomer = null;
@@ -47,7 +48,7 @@ public class SaleService {
         this.paymentService = paymentService;
         this.debtService = debtService;
         this.debtsDAO = new DebtsDAO();
-        this.iAccInfoAPIService = new IAccInfoAPIService();
+        this.iAccInfoAPIService = new IAccInfoAPIService(saService);
         this.timeService = timeService;
         this.receiptService = new ReceiptService(new TemplateService(), timeService);
 
@@ -143,6 +144,15 @@ public class SaleService {
             currentCustomer = customerService.findById(customerId);
         }
     }
+
+    public Result connect(String user, String pass){
+        return iAccInfoAPIService.connect(user, pass);
+    }
+
+    public boolean isConnectedtoSA(){
+        return iAccInfoAPIService.isConnected();
+    }
+
 
     public String getCurrentCustomerName(){
         if(currentCustomer == null){

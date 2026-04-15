@@ -157,6 +157,9 @@ public class CustomersPage extends JPanel {
         return p;
     }
 
+
+
+
     private void hookEvents() {
         tbl.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) {

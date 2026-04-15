@@ -16,12 +16,16 @@ public class DebtsDAO {
         List<DebtRecord> debts = new ArrayList<>();
 
         String sql = """
-            SELECT debt_id, remaining_amount
-            FROM Monthly_Debts
-            WHERE account_id = ?
-            AND remaining_amount > 0
-            ORDER BY debt_month ASC
-            """;
+    SELECT debt_id,
+           remaining_amount,
+           status_1stReminder,
+           status_2ndReminder,
+           debt_month
+    FROM Monthly_Debts
+    WHERE account_id = ?
+    AND remaining_amount > 0
+    ORDER BY debt_month ASC
+    """;
 
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -32,7 +36,12 @@ public class DebtsDAO {
                 while (rs.next()) {
                     debts.add(new DebtRecord(
                             rs.getInt("debt_id"),
-                            rs.getBigDecimal("remaining_amount")
+                            rs.getBigDecimal("remaining_amount"),
+                            rs.getString("status_1stReminder"),
+                            rs.getString("status_2ndReminder"),
+                            rs.getDate("debt_month")
+
+
                     ));
                 }
             }
@@ -67,11 +76,15 @@ public class DebtsDAO {
 
     public DebtRecord getCurrentMonthDebt(Connection con, String accountId, Date month) {
         String sql = """
-        SELECT debt_id, remaining_amount
-        FROM Monthly_Debts
-        WHERE account_id = ?
-        AND debt_month = ?
-        """;
+    SELECT debt_id,
+           remaining_amount,
+           status_1stReminder,
+           status_2ndReminder,
+           debt_month
+    FROM Monthly_Debts
+    WHERE account_id = ?
+    AND debt_month = ?
+    """;
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
 
@@ -82,7 +95,10 @@ public class DebtsDAO {
                 if (rs.next()) {
                     return new DebtRecord(
                             rs.getInt("debt_id"),
-                            rs.getBigDecimal("remaining_amount")
+                            rs.getBigDecimal("remaining_amount"),
+                            rs.getString("status_1stReminder"),
+                            rs.getString("status_2ndReminder"),
+                            rs.getDate("debt_month")
                     );
                 }
             }

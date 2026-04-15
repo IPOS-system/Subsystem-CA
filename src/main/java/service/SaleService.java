@@ -1,7 +1,9 @@
 package service;
 
+import api.IPaymentAPI;
 import api_impl.DatabaseConnection;
 import api_impl.IAccInfoAPIService;
+import api_impl.IPaymentAPIService;
 import dao.DebtsDAO;
 import dao.ItemDAO;
 import dao.SalesDAO;
@@ -11,6 +13,7 @@ import jdk.management.jfr.RecordingInfo;
 import javax.swing.*;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +35,9 @@ public class SaleService {
     private ReceiptService receiptService;
 
     private IAccInfoAPIService iAccInfoAPIService; //for sending orders to ipos sa
+    private IPaymentAPIService iPaymentAPIService;
+
+    public TimeService timeService ;
 
     public SaleService(CustomerService customerService, PaymentService paymentService, TimeService timeService, DebtService debtService){
         this.itemDAO = new ItemDAO();
@@ -42,6 +48,7 @@ public class SaleService {
         this.debtService = debtService;
         this.debtsDAO = new DebtsDAO();
         this.iAccInfoAPIService = new IAccInfoAPIService();
+        this.timeService = timeService;
         this.receiptService = new ReceiptService(new TemplateService(), timeService);
 
     }
@@ -116,6 +123,7 @@ public class SaleService {
 
         Result orderSendResult = iAccInfoAPIService.sendOrder(orderItems);
         //now we send this to ipos sa and see what they say.
+        System.out.println("now we will try and call SA to send the order. ");
         basket.clear();
         return orderSendResult;
     }
@@ -179,7 +187,7 @@ public class SaleService {
 
     //for sales to customers in store.
     //attempts to place sale
-    public Result placeSale(PaymentInfo paymentMethod) {
+    public Result placeSale(PaymentInfo paymentInfo) {
 
         // 1. stock check
         for (SaleItem i : basket){
@@ -193,9 +201,9 @@ public class SaleService {
         BigDecimal total = getTotal();
 
         // 2. validate payment
-        Result paymentResult = paymentService.validatePayment(currentCustomer, total, paymentMethod);
+        Result paymentResult = paymentService.validatePayment(currentCustomer, total, paymentInfo);
         if (!paymentResult.isSuccess()) {
-            return paymentResult;
+            return paymentResult;//if failure
         }
 
         Connection con = null;
@@ -210,7 +218,7 @@ public class SaleService {
 
             Integer debtId = null; //nullable
             //handle account debt
-            if ("account".equals(paymentMethod.method)) {
+            if ("account".equals(paymentInfo.method)) {
                 if (accountId == null) {
                     return Result.fail("account payment requires a customer account");
                 }
@@ -218,9 +226,9 @@ public class SaleService {
             }
 
             // 3. create sale
-            int saleId = salesDAO.createSale(con, accountId, total, paymentMethod.method, debtId);
+            int saleId = salesDAO.createSale(con, accountId, total, paymentInfo.method,  paymentInfo.cardNumber,paymentInfo.expiry, debtId, Date.valueOf(timeService.today()));
 
-            // 4. insert items + update stock
+            //4. insert items + update stock
             for (SaleItem i : basket) {
                 salesDAO.insertSaleItem(con, saleId, i);
                 Result stockResult = itemDAO.reduceStock(con, i.getItemId(), i.getQuantity());
@@ -230,9 +238,13 @@ public class SaleService {
             }
 
 
-            con.commit();
+            con.commit();//from here its a success
 
             String reciept = receiptService.createReceipt(String.valueOf(saleId),customerName , basket);
+            //send the card details to PU;
+            //iPaymentAPIService.Pay();
+            System.out.println("now we will try and call PU to make the payment...");
+
             basket.clear();
 
             return Result.success(reciept);

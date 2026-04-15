@@ -1,12 +1,13 @@
 package service;
 
+import api_impl.DatabaseConnection;
 import dao.DebtsDAO;
 import domain.DebtRecord;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
-import java.time.LocalDate;
+import java.sql.SQLException;
 import java.util.List;
 
 public class DebtService {
@@ -41,6 +42,22 @@ public class DebtService {
             return debt.getDebtId();
         }
     }
+
+    public List<DebtRecord> getAllOutstandingDebts(String accountId){
+        return debtDAO.getDebts(accountId);
+    }
+
+    public DebtRecord getCurrentMonthDebt(String accountId) {
+        Date month = Date.valueOf(timeService.today().withDayOfMonth(1));
+
+        try (Connection con = DatabaseConnection.getConnection()) {
+            return debtDAO.getCurrentMonthDebt(con, accountId, month);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 
 

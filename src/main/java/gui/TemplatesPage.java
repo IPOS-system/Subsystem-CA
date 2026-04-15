@@ -24,6 +24,19 @@ public class TemplatesPage extends JPanel {
                     "--------------------------------\n\n" +
                     "{FOOTER}";
 
+    private static final String REMINDER_TEMPLATE_NAME = "reminder1";
+
+    private static final String DEFAULT_REMINDER_TEMPLATE =
+            "Payment Overdue Reminder\n" +
+                    "========================\n" +
+                    "Customer account No. {CUSTACC}\n" +
+                    "total amount {UNPAID}\n\n" +
+                    "Dear {CLIENT},\n" +
+                    "{OPENING MESSAGE}\n\n" +
+                    "{BODY}\n\n" +
+                    "{END MESSAGE}\n\n" +
+                    "{SIGNED}";
+
     private final TemplateService templateService = new TemplateService();
 
     private JTextArea preview;
@@ -31,6 +44,12 @@ public class TemplatesPage extends JPanel {
     private JTextField addressField;
     private JTextField phoneField;
     private JTextField footerField;
+
+    private JTextArea reminderPreview;
+    private JTextField openingMessageField;
+    private JTextArea bodyField;
+    private JTextField endMessageField;
+    private JTextField signedField;
 
     private CardLayout cardLayout;
     private JPanel contentPanel;
@@ -48,11 +67,17 @@ public class TemplatesPage extends JPanel {
         contentPanel = new JPanel(cardLayout);
         contentPanel.add(buildReceiptPage(), "receipts");
 
+        contentPanel.add(buildReminderPage(), "reminders");
+
         center.add(contentPanel, BorderLayout.CENTER);
         add(center, BorderLayout.CENTER);
 
         initialiseTemplate();
         loadSavedValuesIntoFields();
+
+        loadSavedReminderValuesIntoFields();
+        updateReminderPreview();
+
         updatePreview();
     }
 
@@ -63,6 +88,11 @@ public class TemplatesPage extends JPanel {
         receiptBtn.addActionListener(e -> cardLayout.show(contentPanel, "receipts"));
 
         panel.add(receiptBtn);
+
+        JButton reminderBtn = new JButton("Overdue Reminders");
+        reminderBtn.addActionListener(e -> cardLayout.show(contentPanel, "reminders"));
+        panel.add(reminderBtn);
+
         return panel;
     }
 
@@ -113,6 +143,144 @@ public class TemplatesPage extends JPanel {
         return panel;
     }
 
+    private JPanel buildReminderPage() {
+        JPanel panel = new JPanel(new BorderLayout(20, 0));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        reminderPreview = new JTextArea();
+        reminderPreview.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        reminderPreview.setEditable(false);
+
+        JScrollPane previewScroll = new JScrollPane(reminderPreview);
+
+        JPanel form = new JPanel();
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setPreferredSize(new Dimension(320, 0));
+
+        openingMessageField = new JTextField(15);
+        bodyField = new JTextArea(8, 15);
+        bodyField.setLineWrap(true);
+        bodyField.setWrapStyleWord(true);
+        endMessageField = new JTextField(15);
+        signedField = new JTextField(15);
+
+        form.add(buildField("Opening Message", openingMessageField));
+        form.add(Box.createVerticalStrut(8));
+        form.add(buildTextAreaField("Body", bodyField));
+        form.add(Box.createVerticalStrut(8));
+        form.add(buildField("End Message", endMessageField));
+        form.add(Box.createVerticalStrut(8));
+        form.add(buildField("Signed", signedField));
+
+        form.add(Box.createVerticalStrut(15));
+
+        JButton saveBtn = new JButton("Save");
+        saveBtn.addActionListener(e -> saveReminderValues());
+
+        JButton resetBtn = new JButton("Reset");
+        resetBtn.addActionListener(e -> resetReminderToDefaults());
+
+        form.add(saveBtn);
+        form.add(Box.createVerticalStrut(8));
+        form.add(resetBtn);
+
+        openingMessageField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateReminderPreview());
+        bodyField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateReminderPreview());
+        endMessageField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateReminderPreview());
+        signedField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateReminderPreview());
+
+        panel.add(previewScroll, BorderLayout.CENTER);
+        panel.add(form, BorderLayout.EAST);
+
+        return panel;
+    }
+
+    private JPanel buildTextAreaField(String label, JTextArea field) {
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+
+        JLabel lbl = new JLabel(label);
+        JScrollPane scroll = new JScrollPane(field);
+        scroll.setPreferredSize(new Dimension(250, 120));
+
+        panel.add(lbl, BorderLayout.NORTH);
+        panel.add(scroll, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private void loadSavedReminderValuesIntoFields() {
+        Map<String, String> values = getDefaultReminderValues();
+
+        try {
+            values.putAll(templateService.loadValues(REMINDER_TEMPLATE_NAME));
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Failed to load saved reminder values");
+        }
+
+        openingMessageField.setText(values.get("OPENING MESSAGE"));
+        bodyField.setText(values.get("BODY"));
+        endMessageField.setText(values.get("END MESSAGE"));
+        signedField.setText(values.get("SIGNED"));
+    }
+    private void updateReminderPreview() {
+        try {
+            String template = templateService.loadTemplate(REMINDER_TEMPLATE_NAME);
+
+            template = templateService.applyValues(template, getCurrentReminderFieldValues());
+            template = templateService.applyValues(template, getReminderPreviewValues());
+
+            reminderPreview.setText(template);
+        } catch (IOException e) {
+            reminderPreview.setText("Failed to load template");
+        }
+    }
+
+    private Map<String, String> getReminderPreviewValues() {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put("CUSTACC", "ACC001");
+        values.put("UNPAID", "£125.50");
+        values.put("CLIENT", "Jane Smith");
+
+        // harmless preview-only extras in case your real template includes them
+        values.put("SECOND", "");
+        values.put("INVOICENO", "42");
+        values.put("BEGINMTH", "March");
+        values.put("FIRSTORSECONDMESSAGE", "This is your first reminder regarding the unpaid balance on your account.");
+
+        return values;
+    }
+    private void resetReminderToDefaults() {
+        try {
+            templateService.resetValues(REMINDER_TEMPLATE_NAME);
+
+            Map<String, String> defaults = getDefaultReminderValues();
+            openingMessageField.setText(defaults.get("OPENING MESSAGE"));
+            bodyField.setText(defaults.get("BODY"));
+            endMessageField.setText(defaults.get("END MESSAGE"));
+            signedField.setText(defaults.get("SIGNED"));
+
+            updateReminderPreview();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Reset failed");
+        }
+    }
+    private Map<String, String> getCurrentReminderFieldValues() {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put("OPENING MESSAGE", openingMessageField.getText().trim());
+        values.put("BODY", bodyField.getText().trim());
+        values.put("END MESSAGE", endMessageField.getText().trim());
+        values.put("SIGNED", signedField.getText().trim());
+        return values;
+    }
+    private Map<String, String> getDefaultReminderValues() {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put("OPENING MESSAGE", "Our records show that your payment is now overdue.");
+        values.put("BODY", "Please arrange payment as soon as possible to avoid further action.");
+        values.put("END MESSAGE", "If you have already paid, please disregard this notice.");
+        values.put("SIGNED", "Accounts Department");
+        return values;
+    }
+
     private JPanel buildField(String label, JTextField field) {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
 
@@ -129,6 +297,7 @@ public class TemplatesPage extends JPanel {
     private void initialiseTemplate() {
         try {
             templateService.ensureTemplateExists(TEMPLATE_NAME, DEFAULT_RECEIPT_TEMPLATE);
+            templateService.ensureTemplateExists(REMINDER_TEMPLATE_NAME, DEFAULT_REMINDER_TEMPLATE);
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Failed to initialise template");
         }
@@ -184,6 +353,16 @@ public class TemplatesPage extends JPanel {
             updatePreview();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Reset failed");
+        }
+    }
+
+    private void saveReminderValues() {
+        try {
+            templateService.saveValues(REMINDER_TEMPLATE_NAME, getCurrentReminderFieldValues());
+            updateReminderPreview();
+            JOptionPane.showMessageDialog(this, "Saved");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Save failed");
         }
     }
 

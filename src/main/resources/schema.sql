@@ -116,6 +116,9 @@ CREATE TABLE IF NOT EXISTS Sales (
     total_amount   DECIMAL(10,2) NOT NULL,
     payment_method VARCHAR(20) NOT NULL,
     debt_id        INT,
+    card_first_digits VARCHAR(4),
+    card_last_digits VARCHAR(4),
+    expiry_mm_yy VARCHAR(5),
     FOREIGN KEY (account_id) REFERENCES Customers(account_id),
     FOREIGN KEY (debt_id) REFERENCES Monthly_Debts(debt_id) ON DELETE SET NULL
     );

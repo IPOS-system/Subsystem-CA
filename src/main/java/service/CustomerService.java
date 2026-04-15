@@ -1,14 +1,15 @@
 package service;
 
 import dao.CustomerAccountDAO;
-import dao.DebtsDAO;
 import dao.DiscountPlanDAO;
 import domain.CustomerAccount;
+import domain.DebtRecord;
 import domain.DiscountPlan;
-import domain.DiscountTier;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerService {
@@ -16,6 +17,7 @@ public class CustomerService {
     private final CustomerAccountDAO customerDao;
     private final DiscountPlanDAO discountPlanDAO;
     private final DebtService debtService;
+    private final ReminderService reminderService;
 
 
 
@@ -23,6 +25,7 @@ public class CustomerService {
         this.customerDao = new CustomerAccountDAO();
         this.discountPlanDAO = new DiscountPlanDAO();
         this.debtService = debtService;
+        this.reminderService = new ReminderService();
     }
 
     public BigDecimal getOutstandingDebt(String id){
@@ -41,6 +44,49 @@ public class CustomerService {
         }
     }
 
+    public List<Result> generatereminder(String firstOrSecond, String accountId, String holderName){
+        String firstOrSecondMsg;
+
+        List<DebtRecord> allDebtRecords = debtService.getAllOutstandingDebts(accountId);
+        List<DebtRecord> debtToGenerateReminderOn = new ArrayList<>();
+
+        if("F".equals(firstOrSecond)){
+            firstOrSecondMsg = "F";
+            for(DebtRecord d : allDebtRecords){
+                if ("due".equals(d.getFirstReminder())) {
+                    debtToGenerateReminderOn.add(d);
+                }
+            }
+            if(debtToGenerateReminderOn.isEmpty()){
+                return List.of(Result.fail("no debts with first reminder due"));
+            }
+        }
+
+        else {
+            firstOrSecondMsg = "THIS IS THE SECOND REMINDER";
+            for (DebtRecord d : allDebtRecords) {
+                if ("due".equals(d.getSecondReminder())) {
+                    debtToGenerateReminderOn.add(d);
+                }
+            }
+            if (debtToGenerateReminderOn.isEmpty()) {
+                return List.of(Result.fail("no debts with second reminder due..."));
+            }
+        }
+
+        List<Result> returnRes = new ArrayList<>();
+        for(DebtRecord d : debtToGenerateReminderOn){
+            try{
+                returnRes.add(
+                        Result.success(reminderService.buildOverdueReminder(firstOrSecondMsg, accountId, holderName, d))
+                );
+            } catch (IOException e) {
+                e.printStackTrace();
+                returnRes.add(Result.fail("failure"));
+            }
+        }
+        return returnRes;
+    }
 
     public Result createCustomerAccount(String accountId, String holderName, String contactName,
                                         String address, String phone, String creditText, String status) {

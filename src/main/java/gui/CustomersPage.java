@@ -2,10 +2,7 @@ package gui;
 
 
 import domain.CustomerAccount;
-import service.AppController;
-import service.CustomerService;
-import service.PaymentService;
-import service.Result;
+import service.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -236,6 +233,35 @@ public class CustomersPage extends JPanel {
                 } else {
                     JOptionPane.showMessageDialog(this, result.getMessage());
                 }
+            }
+        });
+
+
+        genFirstReminder.addActionListener(e -> {
+            if(tbl.getSelectedRow() == -1){
+                JOptionPane.showMessageDialog(this, "select client first");
+            }
+            List<Result> results = customerService.generatereminder(
+                    "F",
+                    accountIdTxt.getText(),
+                    holderNameTxt.getText()
+            );
+            for (Result result : results) {
+                JOptionPane.showMessageDialog(this, result.getMessage());
+            }
+        });
+
+        genSecondReminder.addActionListener(e -> {
+            if(tbl.getSelectedRow() == -1){
+                JOptionPane.showMessageDialog(this, "select client first");
+            }
+            List<Result> results = customerService.generatereminder(
+                    "S",
+                    accountIdTxt.getText(),
+                    holderNameTxt.getText()
+            );
+            for (Result result : results) {
+                JOptionPane.showMessageDialog(this, result.getMessage());
             }
         });
 

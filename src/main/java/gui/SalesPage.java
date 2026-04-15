@@ -264,15 +264,40 @@ public class SalesPage extends JPanel {
 
         if (cashBtn.isSelected()) {
             info.method= "cash";
-        } else if (cardBtn.isSelected()) {
-            String cardNumber = JOptionPane.showInputDialog(this, "Enter card number:");
-            if (cardNumber == null || cardNumber.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Invalid card number");
+        }
+        else if (cardBtn.isSelected()) {
+            String cardNumber = JOptionPane.showInputDialog(this, "Enter 16-digit card number:");
+
+            if (cardNumber == null) {
                 return null;
             }
+
+            cardNumber = cardNumber.trim();
+
+            if (!cardNumber.matches("\\d{16}")) {
+                JOptionPane.showMessageDialog(this, "Card number must be exactly 16 digits, with no spaces.");
+                return null;
+            }
+
+            String expiry = JOptionPane.showInputDialog(this, "Enter expiry (MM/YY):");
+
+            if (expiry == null) {
+                return null;
+            }
+
+            expiry = expiry.trim();
+
+            if (!expiry.matches("(0[1-9]|1[0-2])/\\d{2}")) {
+                JOptionPane.showMessageDialog(this, "Expiry must be in MM/YY format.");
+                return null;
+            }
+            info.expiry = expiry;
+
             info.method = "card";
-            info.cardNumber = cardNumber.trim();
-        } else if (accountBtn.isSelected()) {
+            info.cardNumber = cardNumber;
+        }
+
+        else if (accountBtn.isSelected()) {
             info.method = "account";
         }
         return info;
@@ -376,15 +401,15 @@ public class SalesPage extends JPanel {
                     "Info", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        PaymentInfo paymentMethod = showPaymentDialog(); //get payment meth
-        //TODO null pointer exception
+        PaymentInfo paymentInfo = showPaymentDialog(); //get payment meth
 
-        if(paymentMethod == null){
+
+        if(paymentInfo == null){
             JOptionPane.showMessageDialog(this, "no payment method selected, try again");
             return;
         }
 
-        Result saleResult = saleService.placeSale(paymentMethod);
+        Result saleResult = saleService.placeSale(paymentInfo);
         JOptionPane.showMessageDialog(this, saleResult.getMessage());
 
         //clear everything with refresh()

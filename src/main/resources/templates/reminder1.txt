@@ -1,0 +1,15 @@
+Payment Overdue Reminder
+========================
+{SECOND}REMINDER - INVOICE NO {INVOICENO}
+Customer account No. {CUSTACC}
+total amount {UNPAID} for month beginning {BEGINMTH}
+
+Dear {CLIENT},
+{OPENING MESSAGE}
+
+{FIRSTORSECONDMESSAGE}
+{BODY}
+
+{END MESSAGE}
+
+{SIGNED}

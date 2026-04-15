@@ -19,11 +19,8 @@ public interface IAccInfoAPI {
 	Result sendOrder(List<OrderItem> orderItems);
 
 
-	/**
-	 * 
-	 * @param userID
-	 */
-	String getAccountStatus(int userID);
+
+	Result getAccountStatus();
 
 	/**
 	 * 
@@ -62,6 +59,6 @@ public interface IAccInfoAPI {
 	 */
 	List<String> listInvoices(int userID);
 
-	void sendCatalogue();
+	Result sendCatalogue();
 
 }

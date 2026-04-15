@@ -2,6 +2,7 @@ package api_impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import service.Result;
 
 import java.io.IOException;
 import java.net.URI;
@@ -23,9 +24,10 @@ public class SAService {
         this.objectMapper = new ObjectMapper();
     }
 
-    public boolean connect(String username, String password) {
+    public Result connect(String username, String password) {
         try {
             String body = objectMapper.writeValueAsString(new LoginRequest(username, password));
+            System.out.println(username + password);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(SA_BASE_URL + "/api/auth/login"))
@@ -37,22 +39,22 @@ public class SAService {
                     httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 200) {
-                return false;
+                return Result.fail("");
             }
 
             JsonNode json = objectMapper.readTree(response.body());
             JsonNode tokenNode = json.get("token");
 
             if (tokenNode == null || tokenNode.asText().isBlank()) {
-                return false;
+                return Result.fail("");
             }
 
             this.token = tokenNode.asText();
-            return true;
+            return Result.success(this.token);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return Result.fail("");
         }
     }
 

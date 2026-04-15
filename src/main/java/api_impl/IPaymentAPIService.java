@@ -13,7 +13,7 @@ public class IPaymentAPIService implements IPaymentAPI {
 
     @Override
     public Result Pay(Payment payment) {
-        String url = "http://localhost:8080/api/payment/pay";
+        String url = "http://localhost:8082/api/payment/pay";
 
         System.out.println("Sending payment for order " + payment.getOrderId() +
                 " amount " + payment.getAmount() + " via " + url);

@@ -1,6 +1,7 @@
 package gui;
 
 import domain.Item;
+import domain.OrderItem;
 import domain.SaleItem;
 import service.*;
 
@@ -10,6 +11,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 
 public class OrdersPage extends JPanel {
@@ -55,6 +57,9 @@ public class OrdersPage extends JPanel {
             JTextField usernameField = new JTextField(15);
             JPasswordField passwordField = new JPasswordField(15);
 
+            usernameField.setText("cosymed");
+            passwordField.setText("cosymed_password");
+
             JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
             panel.add(new JLabel("SA Username:"));
             panel.add(usernameField);
@@ -81,7 +86,14 @@ public class OrdersPage extends JPanel {
                 continue;
             }
 
-            return saleService.connect(username, password);
+            Result connection=  saleService.connect(username, password);
+            if(connection.isSuccess()){
+               JOptionPane.showMessageDialog(parent, saleService.getAccountStatus().getMessage());
+                return Result.success("connected successfully to IPOS SA");
+            }
+
+            JOptionPane.showMessageDialog(parent, "Invalid username or password or IPOS SA is offline");
+
 
         }
     }

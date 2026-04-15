@@ -1,11 +1,13 @@
 package api_impl;
 
 import api.IAccInfoAPI;
+import com.fasterxml.jackson.databind.JsonNode;
 import domain.LoginInfo;
 import domain.OrderItem;
 import service.Result;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,12 +23,7 @@ public class IAccInfoAPIService implements IAccInfoAPI {
 
     //post
     public Result connect(String username, String password) {
-
-        if( saService.connect(username, password)){
-            return Result.success("coonnect");
-        }
-        return Result.fail("failed to connect. ");
-
+        return saService.connect(username, password);
     }
 
     public boolean isConnected (){
@@ -40,16 +37,44 @@ public class IAccInfoAPIService implements IAccInfoAPI {
 
     //
     @Override
-    public Result sendOrder(List<OrderItem> orderItems){
-        return Result.fail("not done yet");
+    public Result sendOrder(List<OrderItem> orderItems) {
+        try {
+            List<Map<String, Object>> items = new ArrayList<>();
+
+            for (OrderItem orderItem : orderItems) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("productId", orderItem.getItemId());   // map your itemId -> productId
+                item.put("quantity", orderItem.getQuantity());
+                items.add(item);
+            }
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("orderId", "ord-" + System.currentTimeMillis());
+            payload.put("status", "RECEIVED");
+            payload.put("deliveryAddress", "test address");
+            payload.put("items", items);
+
+            System.out.println("SENDING TO SA: " + payload);
+
+            String response = saService.post("/api/orders", payload);   // or "/sendorder" if that's the real endpoint
+            System.out.println("SA RESPONSE: " + response);
+
+            return Result.success(response);
+
+        } catch (IOException | InterruptedException e) {
+            return Result.fail(e.getMessage());
+        }
     }
 
-    //get
     @Override
-    public String getAccountStatus(int userID) {
-        return "";
+    public Result getAccountStatus() {
+        try {
+            JsonNode json = saService.get("/api/accounts/me", JsonNode.class);
+            return Result.success(json.toString());   // raw JSON string
+        } catch (IOException | InterruptedException e) {
+            return Result.fail(e.getMessage());
+        }
     }
-
     //get
     @Override
     public String trackOrder(String orderID) {
@@ -84,9 +109,13 @@ public class IAccInfoAPIService implements IAccInfoAPI {
         return List.of();
     }
 
-    //get
     @Override
-    public void sendCatalogue() {
-
+    public Result sendCatalogue() {
+        try {
+            JsonNode json = saService.get("/api/catalogue", JsonNode.class);
+            return Result.success(json.toString());
+        } catch (IOException | InterruptedException e) {
+            return Result.fail(e.getMessage());
+        }
     }
 }

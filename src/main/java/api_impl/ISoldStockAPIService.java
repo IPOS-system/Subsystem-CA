@@ -19,6 +19,13 @@ public class ISoldStockAPIService implements ISoldStockAPI {
         return itemService.checkStock(productID, qty);
     }
 
+    public Result sendOrder(){
+         return Result.fail("FAIL");
+    }
+
+
+
+
 
 
 }

@@ -51,6 +51,7 @@ public class SaleService {
         this.iAccInfoAPIService = new IAccInfoAPIService(saService);
         this.timeService = timeService;
         this.receiptService = new ReceiptService(new TemplateService(), timeService);
+        this.iPaymentAPIService = new IPaymentAPIService();
 
     }
 
@@ -106,6 +107,9 @@ public class SaleService {
         basket.clear();
 
     }
+    public String formatItemId(String itemId) {
+        return itemId.substring(0, 3) + "-" + itemId.substring(3);
+    }
 
 
     //for orders with SA
@@ -114,18 +118,17 @@ public class SaleService {
         List<OrderItem> orderItems = new ArrayList<>();
         for (SaleItem saleItem : basket) {
             orderItems.add(new OrderItem(
-                    saleItem.getItemId(),
-                    saleItem.getItemDescription(),
-                    saleItem.getQuantity(),
-                    saleItem.getUnitPrice(),
-                    saleItem.getOrderItemPrice()
+                    formatItemId(saleItem.getItemId()),
+                    saleItem.getQuantity()
             ));
+            System.out.println("item "+saleItem.getItemDescription());
         }
 
         Result orderSendResult = iAccInfoAPIService.sendOrder(orderItems);
         //now we send this to ipos sa and see what they say.
         System.out.println("now we will try and call SA to send the order. ");
         basket.clear();
+        System.out.println(orderSendResult.getMessage());
         return orderSendResult;
     }
 
@@ -152,6 +155,13 @@ public class SaleService {
     public boolean isConnectedtoSA(){
         return iAccInfoAPIService.isConnected();
     }
+
+    public Result getAccountStatus(){
+        return iAccInfoAPIService.getAccountStatus();
+    }
+
+
+
 
 
     public String getCurrentCustomerName(){
@@ -218,10 +228,12 @@ public class SaleService {
 
         Connection con = null;
 
+        String accountId = (currentCustomer != null) ? currentCustomer.getAccountId() : null;
+        String customerName = (currentCustomer != null) ? currentCustomer.getContactName() : "Walk-in Customer";
+
+
         try {
 
-            String accountId = (currentCustomer != null) ? currentCustomer.getAccountId() : null;
-            String customerName = (currentCustomer != null) ? currentCustomer.getContactName() : "Walk-in Customer";
 
             con = DatabaseConnection.getConnection(); //use sam con for transactions
             con.setAutoCommit(false);
@@ -253,16 +265,34 @@ public class SaleService {
             String reciept = receiptService.createReceipt(String.valueOf(saleId),customerName , basket);
             //send the card details to PU;
             //iPaymentAPIService.Pay();
-            System.out.println("now we will try and call PU to make the payment...");
+
+            //try call
+
 
             basket.clear();
+
+            String meth =paymentInfo.method;
+            if ("card".equals(meth)){
+                String custName = "Mr potato";
+                if(currentCustomer != null){
+                    custName = currentCustomer.getContactName();
+                }
+                Payment payment =  new Payment("0", getBasketTotal(), "visa", paymentInfo.expiry, custName, paymentInfo.cardNumber, "984");
+                return iPaymentAPIService.Pay(payment);
+
+            }
 
             return Result.success(reciept);
 
         } catch (Exception e) {
             try {
+                e.printStackTrace();
                 if (con != null) con.rollback();
-            } catch (Exception ignored) {}
+            }
+            catch (Exception ignored) {
+                ignored.printStackTrace();
+            }
+
 
             return Result.fail("transaction failed");
 

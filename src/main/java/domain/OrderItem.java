@@ -5,39 +5,41 @@ import java.math.BigDecimal;
 public class OrderItem {
 
     private String itemId;
-    private String description;
+    //private String description;
     private int quantity;
-    private BigDecimal unitCost;
-    private BigDecimal total;
+    //private BigDecimal unitCost;
+    //private BigDecimal total;
 
-    public OrderItem() {}
+    public OrderItem() {
+    }
 
-    public OrderItem(String itemId, String description, int quantity,
-                     BigDecimal unitCost, BigDecimal total) {
+    public OrderItem(String itemId, int quantity
+    ) {
         this.itemId = itemId;
-        this.description = description;
+        //this.description = description;
         this.quantity = quantity;
-        this.unitCost = unitCost;
-        this.total = total;
+        //this.unitCost = unitCost;
+        //this.total = total;
     }
 
     public String getItemId() {
         return itemId;
     }
 
-    public String getDescription() {
-        return description;
-    }
+//    public String getDescription() {
+//        return description;
+//    }
 
     public int getQuantity() {
         return quantity;
     }
 
-    public BigDecimal getUnitCost() {
-        return unitCost;
-    }
-
-    public BigDecimal getTotal() {
-        return total;
-    }
+    //public BigDecimal getUnitCost() {
+//        return unitCost;
+//    }
+//
+//    public BigDecimal getTotal() {
+//        return total;
+//    }
+//}
 }

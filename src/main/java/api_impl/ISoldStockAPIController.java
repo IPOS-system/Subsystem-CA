@@ -9,6 +9,7 @@ import service.ItemService;
 import service.Result;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/stock")
@@ -36,6 +37,14 @@ public class ISoldStockAPIController {
         return service.deductStock(request.getItemId(), request.getQty());
     }
 
+    @PostMapping("/sendorder")
+    public void sendOrder(@RequestBody Map<String, Object> request) {
+        System.out.println("FULL BODY: " + request);
+        System.out.println("orderId: " + request.get("orderId"));
+        System.out.println("status: " + request.get("status"));
+        System.out.println("deliveryAddress: " + request.get("deliveryAddress"));
+        System.out.println("items: " + request.get("items"));
+    }
 
 }
 

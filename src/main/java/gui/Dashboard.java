@@ -1,7 +1,9 @@
 package gui;
 
+import domain.Item;
 import domain.User;
 import service.AppController;
+import service.ItemService;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,8 +12,11 @@ import java.awt.*;
 public class Dashboard extends JPanel {
     private final AppController appController;
     Image backgroundImage;
+    private JPanel alertsContent;
+    private ItemService itemService;
 
-    public Dashboard(AppController appController) {
+    public Dashboard(AppController appController, ItemService itemService) {
+        this.itemService = itemService;
         this.appController = appController;
 
         setLayout(new BorderLayout(12, 12));
@@ -22,6 +27,8 @@ public class Dashboard extends JPanel {
         add(new HeaderPanel(appController), BorderLayout.NORTH);
         add(makeMainPanel(), BorderLayout.CENTER);
         add(makeBottomArea(), BorderLayout.SOUTH);
+
+        refresh();
     }
 
     private JPanel makeMainPanel() {
@@ -139,6 +146,12 @@ public class Dashboard extends JPanel {
         alertsLabel.setFont(alertsLabel.getFont().deriveFont(Font.BOLD, 16f));
         alertsPanel.add(alertsLabel, BorderLayout.NORTH);
 
+        alertsContent = new JPanel();
+        alertsContent.setOpaque(false);
+        alertsContent.setLayout(new BoxLayout(alertsContent, BoxLayout.Y_AXIS));
+
+        alertsPanel.add(alertsContent, BorderLayout.CENTER);
+
         wrapper.add(alertsPanel, BorderLayout.CENTER);
         wrapper.add(new BottomPanel(appController), BorderLayout.SOUTH);
 
@@ -151,5 +164,26 @@ public class Dashboard extends JPanel {
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
+    }
+
+    public void refresh() {
+        alertsContent.removeAll();
+
+        java.util.List<Item> lowStockItems = itemService.findLowStock();
+
+        if (lowStockItems == null || lowStockItems.isEmpty()) {
+            alertsContent.add(new JLabel("No low stock alerts."));
+        } else {
+            for (Item item : lowStockItems) {
+                JLabel label = new JLabel(
+                        item.getItemId() + " - " + item.getDescription()
+                                + " (" + item.getQtyInStock() + " left, limit " + item.getStockLimit() + ")"
+                );
+                alertsContent.add(label);
+            }
+        }
+
+        alertsContent.revalidate();
+        alertsContent.repaint();
     }
 }

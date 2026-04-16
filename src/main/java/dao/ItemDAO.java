@@ -216,5 +216,39 @@ public class ItemDAO {
         }
     }
 
+    public List<Item> findLowStockItems() {
+        List<Item> items = new ArrayList<>();
+
+        String sql = """
+            SELECT
+                item_id,
+                description,
+                package_type,
+                unit,
+                units_in_pack,
+                package_cost,
+                quantity_in_stock,
+                stock_limit,
+                markup
+            FROM Items
+            WHERE quantity_in_stock < stock_limit
+            ORDER BY quantity_in_stock ASC
+            """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                items.add(mapRowToItem(rs));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return items;
+    }
+
 
 }

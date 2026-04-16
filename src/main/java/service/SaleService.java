@@ -262,7 +262,7 @@ public class SaleService {
 
             con.commit();//from here its a success
 
-            String reciept = receiptService.createReceipt(String.valueOf(saleId),customerName , basket);
+            String reciept = receiptService.createReceipt(String.valueOf(saleId),customerName , basket, getTotal());
             //send the card details to PU;
             //iPaymentAPIService.Pay();
 

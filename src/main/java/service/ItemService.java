@@ -91,6 +91,10 @@ public class ItemService {
         return itemDAO.reduceStock(itemId, quantity);
     }
 
+    public List<Item> findLowStock(){
+        return itemDAO.findLowStockItems();
+    }
+
 
 }
 

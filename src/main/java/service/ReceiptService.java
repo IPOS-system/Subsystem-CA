@@ -22,23 +22,28 @@ public class ReceiptService {
         this.timeService = timeService;
     }
 
-    public String createReceipt(String saleId, String customerName, List<SaleItem> items) throws IOException {
+    public String createReceipt(String saleId, String customerName, List<SaleItem> items, BigDecimal total) throws IOException {
         String template = templateService.loadTemplate(TEMPLATE_NAME);
         String filledTemplate = templateService.applyValues(template, templateService.loadValues(TEMPLATE_NAME));
 
-        BigDecimal total = calculateTotal(items);
         String itemsText = buildItemsTable(items);
+
+        BigDecimal originalTotal = calculateOriginalTotal(items);
+        BigDecimal discount = originalTotal.subtract(total);
 
         filledTemplate = filledTemplate.replace("{SALE_ID}", safe(saleId));
         filledTemplate = filledTemplate.replace("{CUSTOMER_NAME}", safe(customerName));
         filledTemplate = filledTemplate.replace("{DATE}", timeService.today().format(DATE_FORMAT));
         filledTemplate = filledTemplate.replace("{ITEMS}", itemsText);
+        filledTemplate = filledTemplate.replace("{SUBTOTAL}", formatMoney(originalTotal));
+        filledTemplate = filledTemplate.replace("{DISCOUNT}", formatMoney(discount));
         filledTemplate = filledTemplate.replace("{TOTAL}", formatMoney(total));
+
 
         return filledTemplate;
     }
 
-    private BigDecimal calculateTotal(List<SaleItem> items) {
+    private BigDecimal calculateOriginalTotal(List<SaleItem> items) {
         BigDecimal total = BigDecimal.ZERO;
 
         for (SaleItem item : items) {
@@ -47,6 +52,8 @@ public class ReceiptService {
 
         return total;
     }
+
+
 
     private String buildItemsTable(List<SaleItem> items) {
         StringBuilder sb = new StringBuilder();

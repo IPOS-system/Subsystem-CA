@@ -107,6 +107,9 @@ public class AppController {
         } else if (pageName.equals("online") && onlineSalePage != null) {
             onlineSalePage.refresh();
         }
+        else if(pageName.equals("dashboard") && dashboardPage != null) {
+            dashboardPage.refresh();
+        }
 
         mainFrame.showPage(pageName);
     }
@@ -145,7 +148,7 @@ public class AppController {
     }
 
     private void addMainPages() {
-        dashboardPage = new Dashboard(this);
+        dashboardPage = new Dashboard(this, itemService);
         ordersPage = new OrdersPage(this, orderService, catalogueService, new SAOrderService(saService));
         usersPage = new UsersPage(this);
         customersPage = new CustomersPage(this, customerService, paymentService);

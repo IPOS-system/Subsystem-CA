@@ -109,8 +109,8 @@ public class Dashboard extends JPanel {
             case "orders", "customers", "stock", "sales" -> role.equals("Pharmacist") || role.equals("Manager") || role.equals("Director of Operations/Manager") || role.equals("Full Access") ;
 
             // Manager access
-            case "templates", "reports", "online" -> role.equals("Director of Operations/Manager")
-                    || role.equals("Senior accountant") || role.equals("Full Access");
+            case "templates", "reports", "online" -> role.equals("Manager") || role.equals("Director of Operations/Manager")
+                    || role.equals("Accountant") || role.equals("Senior accountant")  || role.equals("Full Access");
 
             // Admin access
             case "users" -> role.equals("Administrator") || role.equals("Full Access");

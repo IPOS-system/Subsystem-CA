@@ -1,5 +1,6 @@
 package gui;
 
+import domain.User;
 import service.AppController;
 
 import javax.swing.*;
@@ -7,42 +8,45 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class Dashboard extends JPanel {
+    private final AppController appController;
     Image backgroundImage;
 
     public Dashboard(AppController appController) {
+        this.appController = appController;
+
         setLayout(new BorderLayout(12, 12));
         setBorder(new EmptyBorder(12, 12, 12, 12));
 
         backgroundImage = appController.getBackground();
 
         add(new HeaderPanel(appController), BorderLayout.NORTH);
-        add(makeMainPanel(appController), BorderLayout.CENTER);
-        add(makeBottomArea(appController), BorderLayout.SOUTH);
+        add(makeMainPanel(), BorderLayout.CENTER);
+        add(makeBottomArea(), BorderLayout.SOUTH);
     }
 
-    private JPanel makeMainPanel(AppController appController) {
+    private JPanel makeMainPanel() {
         JPanel mainPanel = new JPanel(new GridLayout(1, 3, 12, 12));
         mainPanel.setOpaque(false);
 
         mainPanel.add(makeSection("Pharmacist",
                 new JButton[]{
-                        makeNavButton("Orders", "orders", appController),
-                        makeNavButton("Customers", "customers", appController),
-                        makeNavButton("Stock", "stock", appController),
-                        makeNavButton("Sales", "sales", appController)
+                        makeNavButton("Orders", "orders"),
+                        makeNavButton("Customers", "customers"),
+                        makeNavButton("Stock", "stock"),
+                        makeNavButton("Sales", "sales")
                 }));
 
         mainPanel.add(makeSection("Manager",
                 new JButton[]{
-                        makeNavButton("Templates", "templates", appController),
-                        makeNavButton("Reports", "reports", appController),
-                        makeNavButton("Online Sales", "online", appController)
+                        makeNavButton("Templates", "templates"),
+                        makeNavButton("Reports", "reports"),
+                        makeNavButton("Online Sales", "online")
                 }));
 
         mainPanel.add(makeSection("Administrator",
                 new JButton[]{
-                        makeNavButton("Users", "users", appController),
-                        makeNavButton("Settings", "settings", appController)
+                        makeNavButton("Users", "users"),
+                        makeNavButton("Settings", "settings")
                 }));
 
         return mainPanel;
@@ -73,15 +77,62 @@ public class Dashboard extends JPanel {
         return section;
     }
 
-    private JButton makeNavButton(String text, String page, AppController appController) {
+    private JButton makeNavButton(String text, String page) {
         JButton button = new JButton(text);
         button.setFocusPainted(false);
-        button.setPreferredSize(new Dimension(160, 42));
-        button.addActionListener(e -> appController.showPage(page));
+        button.addActionListener(e -> guardedShowPage(page));
         return button;
     }
 
-    private JPanel makeBottomArea(AppController appController) {
+    private void guardedShowPage(String pageName) {
+        if (!hasAccess(pageName)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Access denied. You do not have permission to open this page."
+            );
+            return;
+        }
+
+        appController.showPage(pageName);
+    }
+
+    private boolean hasAccess(String pageName) {
+        User user = appController.getCurrentUser();
+        if (user == null) return false;
+
+        String role = user.getRole();
+
+        // pharmacist functions: everyone
+        if (pageName.equals("orders")
+                || pageName.equals("customers")
+                || pageName.equals("stock")
+                || pageName.equals("sales")) {
+            return true;
+        }
+
+        // manager functions
+        //no pharmacists
+        if (pageName.equals("templates")
+                || pageName.equals("reports")
+                || pageName.equals("online")) {
+            return role.equals("Director of Operations/Manager")
+                    || role.equals("Senior accountant") || role.equals("Administrator");
+        }
+
+        // admin functions
+        if (pageName.equals("users")) {
+            return role.equals("Administrator");
+        }
+
+        // settings: nobody
+        if (pageName.equals("settings")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private JPanel makeBottomArea() {
         JPanel wrapper = new JPanel(new BorderLayout(0, 8));
         wrapper.setOpaque(false);
 

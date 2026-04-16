@@ -73,7 +73,8 @@ public class UsersPage extends JPanel {
                 "Administrator",
                 "Director of Operations/Manager",
                 "Senior accountant",
-                "Accountant"
+                "Accountant",
+                "Pharmacist"
         });
 
         addBtn = new JButton("add User");

@@ -269,7 +269,6 @@ public class SaleService {
             //try call
 
 
-            basket.clear();
 
             String meth =paymentInfo.method;
             if ("card".equals(meth)){
@@ -278,11 +277,16 @@ public class SaleService {
                     custName = currentCustomer.getContactName();
                 }
                 Payment payment =  new Payment("0", getBasketTotal(), "visa", paymentInfo.expiry, custName, paymentInfo.cardNumber, "984");
-                return iPaymentAPIService.Pay(payment);
+                basket.clear();
+                System.out.println( iPaymentAPIService.Pay(payment));
+                return Result.success(reciept);
 
             }
-
+            basket.clear();
             return Result.success(reciept);
+
+
+
 
         } catch (Exception e) {
             try {
@@ -294,7 +298,7 @@ public class SaleService {
             }
 
 
-            return Result.fail("transaction failed");
+
 
         } finally {
             try {
@@ -304,5 +308,7 @@ public class SaleService {
                 }
             } catch (Exception ignored) {}
         }
+        basket.clear();
+        return Result.fail("transaction failed");
     }
 }

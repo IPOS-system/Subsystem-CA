@@ -81,6 +81,7 @@ public class AppController {
     }
 
     public void login(User user) {
+        //session.setRole(user.getRole());
         session.setCurrentUser(user);
 
         mainFrame.clearPages();

@@ -11,7 +11,6 @@ public class LoginPage extends JPanel {
     private JButton loginBtn;
 
     public LoginPage(AppController appController) {
-        //sorry broke logos and background, need to pass it from somewhere thats not mainframe
 
         setLayout(new BorderLayout());
 
@@ -25,10 +24,9 @@ public class LoginPage extends JPanel {
         JPasswordField passField = new JPasswordField();
 
 
-        //TODO remove for real demo, this only for ddebug
-        userField.setText("admin");
-        passField.setText("admin");
-
+        //TODO remove for real demo, this only for debug
+        userField.setText("fullAccess");
+        passField.setText("fullAccess");
 
 
         loginBtn = new JButton("Login");
@@ -69,9 +67,8 @@ public class LoginPage extends JPanel {
             String entered_username = userField.getText();
             String entered_password = new String(passField.getPassword());
 
-            //try login, if fails show messgage. if succeed, appcontroller will handle login.
             if (!(appController.authenticateUser(entered_username, entered_password))){
-               JOptionPane.showMessageDialog(this, "Incorrect username or password");
+               JOptionPane.showMessageDialog(this, "Incorrect username or password.");
             }
         });
     }

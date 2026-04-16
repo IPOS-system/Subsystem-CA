@@ -77,6 +77,4 @@ public class MainFrame extends JFrame {
     public Image getLogoImage() {
         return logoImage;
     }
-
-
 }

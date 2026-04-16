@@ -15,16 +15,14 @@ import java.util.List;
 
 public class SalesPage extends JPanel {
 
+    JTable basketTable;
+    DefaultTableModel basketModel;
 
-    //JComboBox<String> customerTypeCmb; //
-    //JTextField       accountIdTxt;    //
-    JTable basketTable;       //basket
-    DefaultTableModel basketModel;       //model for the basket tabl;e
-    JLabel            totalLbl;        //running total
-    JLabel              currentCustLbl;
-    JButton           addItemBtn;
-    JButton           removeItemBtn;
-    JButton           checkoutBtn;
+    JLabel totalLbl;
+    JLabel currentCustLbl;
+    JButton addItemBtn;
+    JButton removeItemBtn;
+    JButton checkoutBtn;
     JButton clearSearchBtn;
 
     JTable catalogueTable;
@@ -34,7 +32,6 @@ public class SalesPage extends JPanel {
     JButton searchBtn;
     JButton clearBtn;
 
-
     private JComboBox<String> customerCmb;
 
     JButton noAccBtn;
@@ -42,7 +39,6 @@ public class SalesPage extends JPanel {
 
 
     //read catalog
-    //private final ItemDAO itemDao = new ItemDAO();
     private final ItemService itemService;
     private final SaleService saleService;
     private final AppController appController;
@@ -68,7 +64,7 @@ public class SalesPage extends JPanel {
 
         //basket table (RIGHT)
         basketModel = new DefaultTableModel(
-                new Object[]{"Item ID", "Description", "Qty", "Unit price", "total"},
+                new Object[]{"Item ID", "Description", "Qty", "Unit Price", "Total"},
                 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -80,7 +76,7 @@ public class SalesPage extends JPanel {
          customerCmb = new JComboBox<>();
         selectCustomerBtn = new JButton("Select");
 
-        noAccBtn = new JButton("no account");
+        noAccBtn = new JButton("Deselect Account");
 
         loadCustomers();
 
@@ -107,7 +103,7 @@ public class SalesPage extends JPanel {
 
         // catalogue table (LEFT)
         catalogueModel = new DefaultTableModel(
-                new Object[]{"Item ID", "Description", "Pack type", "Unit", "Units/Pack", "Pack cost", "QTY in stock"}, 0) {
+                new Object[]{"Item ID", "Description", "Pack type", "Unit", "Units/Pack", "Pack cost", "Qty in Stock"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
@@ -155,7 +151,7 @@ public class SalesPage extends JPanel {
         addItemBtn    = new JButton("Add Item");
         removeItemBtn = new JButton("Remove Item");
         checkoutBtn   = new JButton("Checkout");
-        clearBtn = new JButton("clear basket");
+        clearBtn = new JButton("Clear Basket");
 
         btnPanel.add(addItemBtn);
         btnPanel.add(removeItemBtn);
@@ -173,7 +169,7 @@ public class SalesPage extends JPanel {
         return centre;
     }
 
-    //this should be renamed to load stock or something // its NOT the catalogue
+    //Loads stock of pharmacy
     private void loadCatalogue() {
         catalogueModel.setRowCount(0); //reset
         List<Item> items = itemService.findAll();
@@ -303,7 +299,7 @@ public class SalesPage extends JPanel {
         return info;
     }
 
-    //use this bad boy when you add/remove from basket
+    //Updates table when you add/remove from basket
     private void updateBasketTable(){
         basketModel.setRowCount(0);//clear it
 
@@ -356,12 +352,9 @@ public class SalesPage extends JPanel {
             return;
         }
 
-        //can we get here with erroneous data?
-
         String itemId = catalogueTable.getValueAt(selectedRow, 0).toString();
 
         Item itemToAdd =  itemService.findById(itemId);//errors?
-
 
         // delegate logic to service
         Result addToBasketResult = saleService.addItemToBasket(itemToAdd,qty);
@@ -388,7 +381,6 @@ public class SalesPage extends JPanel {
         if (confirm == JOptionPane.YES_OPTION) {
             saleService.removeItemFromBasket(basketTable.getValueAt(sel, 0).toString());
             updateBasketTable();
-            //basketModel.removeRow(sel);
             recalculateTotal();
         }
     }
@@ -432,8 +424,6 @@ public class SalesPage extends JPanel {
             customerCmb.addItem(c.getAccountId() + " - " + c.getAccountHolderName());
         }
     }
-
-
 
     private void recalculateTotal() {
         BigDecimal total = saleService.getTotal();

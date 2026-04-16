@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS LocalUser (
     );
 
 INSERT IGNORE INTO LocalUser (username, password, role) VALUES
-    ('admin',    'admin',        'Administrator'),
+    ('fullAccess', 'fullAccess', 'Full Access'),
     ('sysdba',   'masterkey',   'Administrator'),
     ('manager',  'Get_it_done',  'Director of Operations/Manager'),
     ('accountant','Count_money','Senior accountant'),

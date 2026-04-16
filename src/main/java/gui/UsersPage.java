@@ -11,7 +11,6 @@ import java.util.List;
 
 public class UsersPage extends JPanel {
 
-
     private final AppController app;
     private final UserDAO usersDao;
 
@@ -67,28 +66,28 @@ public class UsersPage extends JPanel {
         userTxt = new JTextField();
         passTxt = new JPasswordField();
 
-        //these are all the current allowed roles. in a drop down menu
-        //case sensitive i think.
         roleDrop = new JComboBox<>(new String[]{
+                "Pharmacist",
+                "Manager",
                 "Administrator",
+                "Full Access",
                 "Director of Operations/Manager",
-                "Senior accountant",
                 "Accountant",
-                "Pharmacist"
+                "Senior accountant"
         });
 
-        addBtn = new JButton("add User");
-        updBtn = new JButton("update Role");
-        delBtn = new JButton("delete User");
-        clrBtn = new JButton("clear");
+        addBtn = new JButton("Add User");
+        updBtn = new JButton("Update Role");
+        delBtn = new JButton("Delete User");
+        clrBtn = new JButton("Deselect User");
 
-        form.add(new JLabel("username:"));
+        form.add(new JLabel("Username:"));
         form.add(userTxt);
 
-        form.add(new JLabel("password:"));
+        form.add(new JLabel("Password:"));
         form.add(passTxt);
 
-        form.add(new JLabel("role:"));
+        form.add(new JLabel("Role:"));
         form.add(roleDrop);
 
         form.add(addBtn);
@@ -136,18 +135,18 @@ public class UsersPage extends JPanel {
 
             //basic validation only
             if (uname.isEmpty() || pw.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "username and password required.");
+                JOptionPane.showMessageDialog(this, "Username and password is required.");
                 return;
             }
 
             boolean ok = usersDao.createUser(uname, pw, r);
 
             if (ok) {
-                JOptionPane.showMessageDialog(this, "user created.");
+                JOptionPane.showMessageDialog(this, "User created.");
                 resetForm();
                 loadUsersIntoTable();
             } else {
-                JOptionPane.showMessageDialog(this, "could not create user.");
+                JOptionPane.showMessageDialog(this, "Could not create user.");
             }
         });
 
@@ -155,27 +154,26 @@ public class UsersPage extends JPanel {
             int row = tbl.getSelectedRow();
 
             if (row == -1) {
-                JOptionPane.showMessageDialog(this, "select a user first.");
+                JOptionPane.showMessageDialog(this, "Select a user first.");
                 return;
             }
 
             String uname = userTxt.getText().trim();
             String pickedRole = roleDrop.getSelectedItem().toString();
 
-            //prototype rule.. only admin
             if (uname.equals(app.getCurrentUser().getUsername())) {
-                JOptionPane.showMessageDialog(this, "admin account cannot be changed ");
+                JOptionPane.showMessageDialog(this, "Account can not update itself.");
                 return;
             }
 
             boolean ok = usersDao.updateUserRole(uname, pickedRole);
 
             if (ok) {
-                JOptionPane.showMessageDialog(this, "role updated.");
+                JOptionPane.showMessageDialog(this, "Role updated.");
                 resetForm();
                 loadUsersIntoTable();
             } else {
-                JOptionPane.showMessageDialog(this, "could not update role");
+                JOptionPane.showMessageDialog(this, "Could not update role.");
             }
         });
 
@@ -183,7 +181,7 @@ public class UsersPage extends JPanel {
             int row = tbl.getSelectedRow();
 
             if (row == -1) {
-                JOptionPane.showMessageDialog(this, "select user first");
+                JOptionPane.showMessageDialog(this, "Select a user first.");
                 return;
             }
 
@@ -191,15 +189,14 @@ public class UsersPage extends JPanel {
 
             //dont let admin break their own account here
             if (uname.equals(app.getCurrentUser().getUsername())) {
-                JOptionPane.showMessageDialog(this, "admin account cannot be deleted");
+                JOptionPane.showMessageDialog(this, "Account cannot delete itself.");
                 return;
             }
 
-            //contfirmation box
             int yesNo = JOptionPane.showConfirmDialog(
                     this,
-                    "delete user: " + uname + "?",
-                    "confirm Delete",
+                    "Delete user: " + uname + "?",
+                    "Confirm User Deletion",
                     JOptionPane.YES_NO_OPTION
             );
 
@@ -207,11 +204,11 @@ public class UsersPage extends JPanel {
                 boolean ok = usersDao.deleteUser(uname);
 
                 if (ok) {
-                    JOptionPane.showMessageDialog(this, "user deleted.");
+                    JOptionPane.showMessageDialog(this, "User deleted.");
                     resetForm();
                     loadUsersIntoTable();
                 } else {
-                    JOptionPane.showMessageDialog(this, "could not delete user.");
+                    JOptionPane.showMessageDialog(this, "Could not delete user.");
                 }
             }
         });

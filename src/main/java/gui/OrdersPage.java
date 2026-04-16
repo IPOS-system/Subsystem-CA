@@ -69,7 +69,7 @@ public class OrdersPage extends JPanel {
         centre.setOpaque(false);
 
         basketModel = new DefaultTableModel(
-                new Object[]{"Item ID", "Description", "Qty", "Unit price", "total"}, 0) {
+                new Object[]{"Item ID", "Description", "Qty", "Unit Price", "Total"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
@@ -90,7 +90,7 @@ public class OrdersPage extends JPanel {
 
 
         catalogueModel = new DefaultTableModel(
-                new Object[]{"Item ID", "Description", "Pack type", "Unit", "Units/Pack", "Pack cost", "availability"}, 0) {
+                new Object[]{"Item ID", "Description", "Pack Type", "Unit", "Units/Pack", "Pack Cost", "Availability"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
@@ -122,9 +122,9 @@ public class OrdersPage extends JPanel {
         addItemBtn = new JButton("Add Item");
         removeItemBtn = new JButton("Remove Item");
         placeOrderBtn = new JButton("Place Order");
-        clearBtn = new JButton("clear basket");
+        clearBtn = new JButton("Clear Basket");
 
-        refreshCatBtn = new JButton("refresh catalogue");
+        refreshCatBtn = new JButton("Refresh Catalogue");
 
         ordersBtn = new JButton("Orders");
         btnPanel.add(ordersBtn);
@@ -304,7 +304,7 @@ public class OrdersPage extends JPanel {
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "invalid quantity");
+            JOptionPane.showMessageDialog(this, "Invalid quantity.");
         }
     }
 

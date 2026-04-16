@@ -38,7 +38,7 @@ public class HeaderPanel extends JPanel {
 
     public void updateTimeLabel() {
         if (timeService.isVirtual()) {
-            timeLabel.setText("Time: (virtual time) (" + timeService.today() + ")");
+            timeLabel.setText("Time (Virtual): (" + timeService.today() + ")");
         } else {
             timeLabel.setText("Time: (" + LocalDate.now() + ")");
         }

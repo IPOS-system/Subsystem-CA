@@ -15,11 +15,8 @@ import java.util.List;
 
 public class CustomersPage extends JPanel {
 
-
-
     private final AppController appController;
     private final CustomerService customerService;
-    //private final CustomerAccountDAO customerDao;
 
     private JTable tbl;
     private DefaultTableModel model;
@@ -69,14 +66,14 @@ public class CustomersPage extends JPanel {
 
         model = new DefaultTableModel(
                 new Object[]{
-                        "account id",
-                        "holder name",
-                        "contact",
-                        "phone",
-                        "credit limit",
-                        "discount plan",
-                        "status",
-                        "balance"
+                        "Account ID",
+                        "Holder Name",
+                        "Contact",
+                        "Phone",
+                        "Credit Limit",
+                        "Discount Plan",
+                        "Status",
+                        "Balance"
                 }, 0
         ) {
             @Override
@@ -89,7 +86,7 @@ public class CustomersPage extends JPanel {
         JScrollPane sp = new JScrollPane(tbl);
 
         JPanel form = new JPanel(new GridLayout(0, 4, 10, 10));
-        form.setBorder(BorderFactory.createTitledBorder("manage customer accounts"));
+        form.setBorder(BorderFactory.createTitledBorder("Manage customer accounts"));
 
         accountIdTxt = new JTextField();
         holderNameTxt = new JTextField();
@@ -97,52 +94,45 @@ public class CustomersPage extends JPanel {
         addressTxt = new JTextField();
         phoneTxt = new JTextField();
         creditLimitTxt = new JTextField();
-
         agreedDiscountTxt = new JTextField();
         agreedDiscountTxt.setEditable(false); // display only
 
         statusDrop = new JComboBox<>(new String[]{
-                "active",
-                "inactive"
+                "Active",
+                "Inactive"
         });
 
-        addBtn = new JButton("add account");
-        delBtn = new JButton("delete account");
-        clrBtn = new JButton("clear");
-        genFirstReminder = new JButton("Generate 1st Rem");
-        genSecondReminder = new JButton("Generate 2nd Rem");
-        makePaymentBtn = new JButton("make payment");
+        addBtn = new JButton("Add Account");
+        delBtn = new JButton("Delete Account");
+        clrBtn = new JButton("Deselect Account");
+        genFirstReminder = new JButton("Generate 1st Reminder");
+        genSecondReminder = new JButton("Generate 2nd Reminder");
+        makePaymentBtn = new JButton("Make Payment");
+        updBtn = new JButton("Update Details");
+        discountBtn = new JButton("View / Edit Discount Plans");
 
-        updBtn = new JButton("update details");
-        discountBtn = new JButton("view/edit discount plans");
-
-        form.add(new JLabel("account id:"));
+        form.add(new JLabel("Account ID:"));
         form.add(accountIdTxt);
-        form.add(new JLabel("holder name:"));
+        form.add(new JLabel("Holder Name:"));
         form.add(holderNameTxt);
-
-        form.add(new JLabel("contact name:"));
+        form.add(new JLabel("Contact Name:"));
         form.add(contactNameTxt);
-        form.add(new JLabel("address:"));
+        form.add(new JLabel("Address:"));
         form.add(addressTxt);
-
-        form.add(new JLabel("phone:"));
+        form.add(new JLabel("Phone:"));
         form.add(phoneTxt);
-        form.add(new JLabel("credit limit:"));
+        form.add(new JLabel("Credit Limit:"));
         form.add(creditLimitTxt);
-
-        form.add(new JLabel("agreed discount:"));
+        form.add(new JLabel("Agreed Discount:"));
         form.add(agreedDiscountTxt);
-        form.add(new JLabel("status:"));
+        form.add(new JLabel("Status:"));
         form.add(statusDrop);
 
         form.add(addBtn);
         form.add(delBtn);
         form.add(updBtn);
         form.add(clrBtn);
-
         form.add(discountBtn);
-
         form.add(genFirstReminder);
         form.add(genSecondReminder);
         form.add(makePaymentBtn);
@@ -156,7 +146,6 @@ public class CustomersPage extends JPanel {
 
         return p;
     }
-
 
 
 
@@ -213,7 +202,7 @@ public class CustomersPage extends JPanel {
             int row = tbl.getSelectedRow();
 
             if (row == -1) {
-                JOptionPane.showMessageDialog(this, "select account first.");
+                JOptionPane.showMessageDialog(this, "Select account first.");
                 return;
             }
 
@@ -221,8 +210,8 @@ public class CustomersPage extends JPanel {
 
             int yesNo = JOptionPane.showConfirmDialog(
                     this,
-                    "delete account: " + accountId + "?",
-                    "confirm delete",
+                    "Delete account: " + accountId + "?",
+                    "Confirm Account Deletion",
                     JOptionPane.YES_NO_OPTION
             );
 
@@ -242,7 +231,7 @@ public class CustomersPage extends JPanel {
 
         genFirstReminder.addActionListener(e -> {
             if(tbl.getSelectedRow() == -1){
-                JOptionPane.showMessageDialog(this, "select client first");
+                JOptionPane.showMessageDialog(this, "Select a customer first.");
             }
             List<Result> results = customerService.generatereminder(
                     "F",
@@ -256,7 +245,7 @@ public class CustomersPage extends JPanel {
 
         genSecondReminder.addActionListener(e -> {
             if(tbl.getSelectedRow() == -1){
-                JOptionPane.showMessageDialog(this, "select client first");
+                JOptionPane.showMessageDialog(this, "Select a customer first.");
             }
             List<Result> results = customerService.generatereminder(
                     "S",
@@ -306,7 +295,7 @@ public class CustomersPage extends JPanel {
             //if account in default, manager requred to fix it.
             if("in default".equals(customer.getAccountStatus()) && !("Director of Operations/Manager".equals(appController.getCurrentUser().getRole()))){
 
-                JOptionPane.showMessageDialog(this, "manager action required");
+                JOptionPane.showMessageDialog(this, "Manager action required");
                 return;
             }
 
@@ -329,7 +318,7 @@ public class CustomersPage extends JPanel {
         discountBtn.addActionListener(e ->{
             String accountId = accountIdTxt.getText();
             if(accountId.isEmpty()){
-                JOptionPane.showMessageDialog(this, "select account first.");
+                JOptionPane.showMessageDialog(this, "Select a customer first.");
                 return;
             }
             appController.showDiscountPlanPage(accountId);

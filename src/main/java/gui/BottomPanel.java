@@ -25,6 +25,7 @@ public class BottomPanel extends JPanel {
 
         rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(dashboardButton, BorderLayout.WEST);
+        rightPanel.add(Box.createHorizontalStrut(10), BorderLayout.CENTER);
         rightPanel.add(logoutButton, BorderLayout.EAST);
 
         add(loggedInLabel, BorderLayout.WEST);

@@ -15,9 +15,6 @@ public class StockPage extends JPanel {
     private final AppController appController;
     private final ItemService itemService;
 
-
-
-
     private JTable tbl;
     private DefaultTableModel stockModel;
 
@@ -35,8 +32,6 @@ public class StockPage extends JPanel {
     private JButton addBtn;
     private JButton updateQtyBtn;
     private JButton removeBtn;
-    private JButton deliveryBtn;
-    private JButton lowStockBtn;
     private JButton clearBtn;
     private JButton searchBtn;
     private JButton resetSearchBtn;
@@ -60,10 +55,10 @@ public class StockPage extends JPanel {
         // --- search bar ---
         JPanel searchPanel = new JPanel(new BorderLayout(5, 5));
         searchTxt = new JTextField();
-        searchBtn = new JButton("search");
-        resetSearchBtn = new JButton("reset search");
+        searchBtn = new JButton("Search");
+        resetSearchBtn = new JButton("Reset Search");
 
-        searchPanel.add(new JLabel("search below quantity in stock:"), BorderLayout.WEST);
+        searchPanel.add(new JLabel("Search by quantity in stock:"), BorderLayout.WEST);
         searchPanel.add(searchTxt, BorderLayout.CENTER);
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -76,15 +71,15 @@ public class StockPage extends JPanel {
 
         stockModel = new DefaultTableModel(
                 new Object[]{
-                        "item id",
-                        "description",
-                        "package type",
-                        "unit",
-                        "units/pack",
-                        "cost",
-                        "qty in stock",
-                        "stock limit",
-                        "markup"
+                        "Item ID",
+                        "Description",
+                        "Package Type",
+                        "Unit",
+                        "Units/Pack",
+                        "Cost",
+                        "Qty in Stock",
+                        "Stock Limit",
+                        "Markup"
                 }, 0
         ) {
             @Override
@@ -96,14 +91,10 @@ public class StockPage extends JPanel {
         tbl = new JTable(stockModel);
         tbl.getTableHeader().setReorderingAllowed(false);
 
-
-
-
-
         JScrollPane sp = new JScrollPane(tbl);
 
         JPanel form = new JPanel(new GridLayout(7, 4, 10, 10));
-        form.setBorder(BorderFactory.createTitledBorder("manage stock"));
+        form.setBorder(BorderFactory.createTitledBorder("Manage Stock"));
 
         itemIdTxt = new JTextField();
         descriptionTxt = new JTextField();
@@ -115,39 +106,37 @@ public class StockPage extends JPanel {
         stockLimitTxt = new JTextField();
         markupTxt =  new JTextField();
 
-        addBtn = new JButton("add item");
-        updateQtyBtn = new JButton("update quantity");
-        removeBtn = new JButton("remove item");
-        //deliveryBtn = new JButton("record delivery");
-        //lowStockBtn = new JButton("low stock");
-        clearBtn = new JButton("clear");
+        addBtn = new JButton("Add Item");
+        updateQtyBtn = new JButton("Update Quantity");
+        removeBtn = new JButton("Remove Item");
+        clearBtn = new JButton("Deselect Item");
 
-        form.add(new JLabel("item id:"));
+        form.add(new JLabel("Item ID:"));
         form.add(itemIdTxt);
         //itemIdTxt.setEditable(false);
 
-        form.add(new JLabel("description:"));
+        form.add(new JLabel("Description:"));
         form.add(descriptionTxt);
         //descriptionTxt.setEditable(false);
 
-        form.add(new JLabel("package type:"));
+        form.add(new JLabel("Package Type:"));
         form.add(packageTypeTxt);
 
-        form.add(new JLabel("unit:"));
+        form.add(new JLabel("Units:"));
         form.add(unitTxt);
 
-        form.add(new JLabel("units in pack:"));
+        form.add(new JLabel("Units in Pack:"));
         form.add(unitsInPackTxt);
-        form.add(new JLabel("package cost:"));
+        form.add(new JLabel("Package Cost:"));
         form.add(packageCostTxt);
 
-        form.add(new JLabel("quantity:"));
+        form.add(new JLabel("Quantity:"));
         form.add(quantityTxt);
 
-        form.add(new JLabel("stock limit:"));
+        form.add(new JLabel("Stock Limit:"));
         form.add(stockLimitTxt);
 
-        form.add(new JLabel("markup"));
+        form.add(new JLabel("Markup"));
         form.add(markupTxt);
 
         form.add(addBtn);
@@ -155,16 +144,12 @@ public class StockPage extends JPanel {
         form.add(removeBtn);
         form.add(clearBtn);
 
-        //form.add(deliveryBtn);
-        //form.add(lowStockBtn);
         form.add(new JLabel(""));
         form.add(new JLabel(""));
 
         p.add(searchPanel, BorderLayout.NORTH);
         p.add(sp, BorderLayout.CENTER);
         p.add(form, BorderLayout.SOUTH);
-
-
 
         updateTable();
         bindTableSelection();
@@ -205,7 +190,7 @@ public class StockPage extends JPanel {
             }
 
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Invalid input");
+            JOptionPane.showMessageDialog(this, "Invalid input.");
         }
     };
 
@@ -213,7 +198,7 @@ public class StockPage extends JPanel {
         try {
             int row = tbl.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "select a row first");
+                JOptionPane.showMessageDialog(this, "Select a row first.");
                 return;
             }
 
@@ -221,7 +206,7 @@ public class StockPage extends JPanel {
             int newQty = Integer.parseInt(quantityTxt.getText().trim());
 
             if (newQty < 0) {
-                JOptionPane.showMessageDialog(this, "qty must be >= 0");
+                JOptionPane.showMessageDialog(this, "Quantity must be positive.");
                 return;
             }
 
@@ -233,7 +218,7 @@ public class StockPage extends JPanel {
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "invalid input");
+            JOptionPane.showMessageDialog(this, "Invalid input.");
         }
     }
 
@@ -241,7 +226,7 @@ public class StockPage extends JPanel {
         try {
             int row = tbl.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "select a row first");
+                JOptionPane.showMessageDialog(this, "Select a row first.");
                 return;
             }
 
@@ -256,12 +241,11 @@ public class StockPage extends JPanel {
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "error deleting item");
+            JOptionPane.showMessageDialog(this, "Error deleting item.");
         }
     }
 
     private void onClearBtn(){
-        //updateTable();
         itemIdTxt.setText("");
         descriptionTxt.setText("");
         packageTypeTxt.setText("");
@@ -296,7 +280,7 @@ public class StockPage extends JPanel {
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "invalid threshold");
+            JOptionPane.showMessageDialog(this, "Invalid threshold.");
         }
     }
 

@@ -96,40 +96,31 @@ public class Dashboard extends JPanel {
         appController.showPage(pageName);
     }
 
+    // Manages access to each page depending on user role
     private boolean hasAccess(String pageName) {
         User user = appController.getCurrentUser();
         if (user == null) return false;
 
         String role = user.getRole();
 
-        // pharmacist functions: everyone
-        if (pageName.equals("orders")
-                || pageName.equals("customers")
-                || pageName.equals("stock")
-                || pageName.equals("sales")) {
-            return true;
-        }
+        return switch (pageName) {
 
-        // manager functions
-        //no pharmacists
-        if (pageName.equals("templates")
-                || pageName.equals("reports")
-                || pageName.equals("online")) {
-            return role.equals("Director of Operations/Manager")
-                    || role.equals("Senior accountant") || role.equals("Administrator");
-        }
+            // Pharmacist access
+            case "orders", "customers", "stock", "sales" -> role.equals("Pharmacist") || role.equals("Manager") || role.equals("Director of Operations/Manager") || role.equals("Full Access") ;
 
-        // admin functions
-        if (pageName.equals("users")) {
-            return role.equals("Administrator");
-        }
+            // Manager access
+            case "templates", "reports", "online" -> role.equals("Director of Operations/Manager")
+                    || role.equals("Senior accountant") || role.equals("Full Access");
 
-        // settings: nobody
-        if (pageName.equals("settings")) {
-            return true;
-        }
+            // Admin access
+            case "users" -> role.equals("Administrator") || role.equals("Full Access");
 
-        return false;
+            // All roles have access to settings
+            case "settings" -> true;
+
+            default -> false;
+        };
+
     }
 
     private JPanel makeBottomArea() {

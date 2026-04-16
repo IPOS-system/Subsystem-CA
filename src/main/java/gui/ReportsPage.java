@@ -129,11 +129,11 @@ public class ReportsPage extends JPanel {
                 end = LocalDate.parse(endField.getText().trim());
 
                 if (start.isAfter(end)) {
-                    throw new IllegalArgumentException("Start date must be before end date");
+                    throw new IllegalArgumentException("Start date must be before end date.");
                 }
 
                 if (end.isAfter(controller.getTimeService().today())) {
-                    throw new IllegalArgumentException("End date cannot be in the future");
+                    throw new IllegalArgumentException("End date cannot be in the future.");
                 }
             }
 
@@ -163,13 +163,13 @@ public class ReportsPage extends JPanel {
         try {
             if (!outputArea.print()) {
                 JOptionPane.showMessageDialog(this,
-                        "Printing cancelled",
+                        "Printing cancelled.",
                         "Print", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
                     ex.getMessage(),
-                    "Print error", JOptionPane.ERROR_MESSAGE);
+                    "Printing error.", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

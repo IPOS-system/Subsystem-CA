@@ -42,6 +42,10 @@ public class ItemService {
         return Result.fail("failure");
     }
 
+    Result addQtyToStock(String itemId, int newQty){
+        return modifyQtyInStock(itemId, newQty + findById(itemId).getQtyInStock());
+    }
+
 
     public Result removeItemFromStock(String itemId){
         Item item = itemDAO.findById(itemId);

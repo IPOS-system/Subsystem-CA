@@ -189,7 +189,8 @@ CREATE TABLE IF NOT EXISTS CatalogueItems (
                                          package_type   VARCHAR(50) NOT NULL,
                                          unit           VARCHAR(50) NOT NULL,
                                          units_in_pack  INT NOT NULL,
-                                         package_cost   DECIMAL(10,2) NOT NULL
+                                         package_cost   DECIMAL(10,2) NOT NULL,
+                                        availability INT NOT NULL DEFAULT 0
 );
 
 #insert because ipos ca isnt ready yet, but hopefully get from catalogue later and insert with catalogueservice.
@@ -222,6 +223,21 @@ CREATE TABLE IF NOT EXISTS OrderItems (
                                           PRIMARY KEY (order_id, item_id),
                                           FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE,
                                           FOREIGN KEY (item_id) REFERENCES CatalogueItems(item_id)
+);
+
+CREATE TABLE IF NOT EXISTS OnlineOrders (
+                                            order_id VARCHAR(64) PRIMARY KEY,
+                                            status VARCHAR(32) NOT NULL,
+                                            delivery_address VARCHAR(255) NOT NULL,
+                                            received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS OnlineOrderItems (
+                                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                                order_id VARCHAR(64) NOT NULL,
+                                                product_id VARCHAR(12) NOT NULL,
+                                                quantity INT NOT NULL,
+                                                FOREIGN KEY (order_id) REFERENCES OnlineOrders(order_id)
 );
 
 

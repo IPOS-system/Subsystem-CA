@@ -16,6 +16,7 @@ public class SAService {
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
+    int merchantId = -1;
 
     private String token;
 
@@ -44,6 +45,8 @@ public class SAService {
 
             JsonNode json = objectMapper.readTree(response.body());
             JsonNode tokenNode = json.get("token");
+
+            merchantId = json.get("merchantId").asInt();
 
             if (tokenNode == null || tokenNode.asText().isBlank()) {
                 return Result.fail("");
@@ -92,6 +95,31 @@ public class SAService {
                 httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         return response.body();
+    }
+
+    public String put(String path, Object payload) throws IOException, InterruptedException {
+        String body = objectMapper.writeValueAsString(payload);
+
+        System.out.println("PUT URL: " + SA_BASE_URL + path);
+        System.out.println("PUT BODY: " + body);
+        System.out.println("TOKEN: " + token);
+
+        HttpRequest request = authorizedRequest(path)
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> response =
+                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println("PUT STATUS: " + response.statusCode());
+        System.out.println("PUT RESPONSE: " + response.body());
+
+        return response.body();
+    }
+
+    public int getMerchantId(){
+        return merchantId;
     }
 
     public boolean isConnected() {

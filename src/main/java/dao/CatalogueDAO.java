@@ -1,5 +1,4 @@
 package dao;
-
 import api_impl.DatabaseConnection;
 import domain.Item;
 
@@ -12,13 +11,51 @@ import java.util.List;
 
 public class CatalogueDAO {
 
-    //use when ipos sends us catalogue, and update catalogue in db
-    public void updateCatalogue(){};
+    public void updateCatalogue(List<Item> items) {
+        String sql = """
+                INSERT INTO CatalogueItems (
+                    item_id,
+                    description,
+                    package_type,
+                    unit,
+                    units_in_pack,
+                    package_cost,
+                    availability
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                    description = VALUES(description),
+                    package_type = VALUES(package_type),
+                    unit = VALUES(unit),
+                    units_in_pack = VALUES(units_in_pack),
+                    package_cost = VALUES(package_cost),
+                    availability = VALUES(availability)
+                """;
 
-    public List<Item> findAll(){
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            for (Item item : items) {
+                ps.setString(1, item.getItemId());
+                ps.setString(2, item.getDescription());
+                ps.setString(3, item.getPackageType());
+                ps.setString(4, item.getUnit());
+                ps.setInt(5, item.getUnitsInPack());
+                ps.setBigDecimal(6, item.getPackageCost());
+                ps.setInt(7, item.getQtyInStock()); //using qtyInStock as availability
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Item> findAll() {
         List<Item> items = new ArrayList<>();
 
-        //select only the columns the UI needs.
         String sql = """
                 SELECT
                     item_id,
@@ -26,7 +63,8 @@ public class CatalogueDAO {
                     package_type,
                     unit,
                     units_in_pack,
-                    package_cost
+                    package_cost,
+                    availability
                 FROM CatalogueItems
                 ORDER BY item_id
                 """;
@@ -40,14 +78,13 @@ public class CatalogueDAO {
             }
 
         } catch (SQLException e) {
-            // print the stack‑trace.
             e.printStackTrace();
         }
 
         return items;
-    };
+    }
 
-    public Item findById(String id){
+    public Item findById(String id) {
         String sql = """
                 SELECT
                     item_id,
@@ -55,7 +92,8 @@ public class CatalogueDAO {
                     package_type,
                     unit,
                     units_in_pack,
-                    package_cost
+                    package_cost,
+                    availability
                 FROM CatalogueItems
                 WHERE item_id = ?
                 """;
@@ -76,7 +114,7 @@ public class CatalogueDAO {
         }
 
         return null;
-    };
+    }
 
     private Item mapRowToItem(ResultSet rs) throws SQLException {
         return new Item(
@@ -86,9 +124,9 @@ public class CatalogueDAO {
                 rs.getString("unit"),
                 rs.getInt("units_in_pack"),
                 rs.getBigDecimal("package_cost"),
-                0, //qtyInStock (not used)
-                0, //stockLimit (not used)
-                0  //markup (not used)
+                rs.getInt("availability"),
+                0,
+                0
         );
     }
 }

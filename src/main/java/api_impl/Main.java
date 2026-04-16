@@ -10,6 +10,7 @@ import api.*;
 
 
 import javax.swing.*;
+import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.sql.Time;
 
@@ -35,9 +36,14 @@ public class Main {
             UIManager.put("Panel.background", Color.WHITE);
             UIManager.put("OptionPane.background", Color.WHITE);
             UIManager.put("Viewport.background", Color.WHITE);
+            setGlobalFont(new Font("SansSerif", Font.PLAIN, 13));
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
 
         DatabaseSetup.initialiseDatabase();
 
@@ -51,7 +57,6 @@ public class Main {
         DebtService debtService = new DebtService(timeService, accountStatusService);
 
         SAService saService = new SAService();
-        //saService.connect("city", "northampton");
 
 
 
@@ -61,7 +66,7 @@ public class Main {
         ItemService itemService = new ItemService();
         SaleService orderService = new SaleService(customerService, paymentService,timeService, debtService, saService);
         TemplateService templateService = new TemplateService();
-        CatalogueService catalogueService = new CatalogueService();
+        CatalogueService catalogueService = new CatalogueService(saService);
 
 
 
@@ -76,5 +81,23 @@ public class Main {
         //appController.getTemplateService().syncTemplatesWithFilesystem();
 
         appController.start();
+    }
+    public static void setGlobalFont(Font font) {
+        FontUIResource f = new FontUIResource(font);
+        UIManager.put("Button.font", f);
+        UIManager.put("Label.font", f);
+        UIManager.put("Panel.font", f);
+        UIManager.put("TabbedPane.font", f);
+        UIManager.put("Table.font", f);
+        UIManager.put("TableHeader.font", f);
+        UIManager.put("TextField.font", f);
+        UIManager.put("PasswordField.font", f);
+        UIManager.put("TextArea.font", f);
+        UIManager.put("ComboBox.font", f);
+        UIManager.put("CheckBox.font", f);
+        UIManager.put("RadioButton.font", f);
+        UIManager.put("Menu.font", f);
+        UIManager.put("MenuItem.font", f);
+        UIManager.put("TitledBorder.font", f);
     }
 }

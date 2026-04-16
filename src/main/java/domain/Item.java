@@ -33,9 +33,7 @@ public class Item {
     public String getItemId() {
         return itemId;
     }
-//    public void setItemId(String itemId) {
-//        this.itemId = itemId;
-//    }
+
 
     public String getDescription() {
         return description;

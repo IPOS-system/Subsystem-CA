@@ -39,6 +39,9 @@ public class AppController {
     private SettingsPanel settingsPage;
     private TimeService timeService;
     private AccountStatusService accountStatusService;
+    private OnlineSaleService onlineSaleService;
+    private OnlineSalesPage onlineSalePage;
+
 
     private SAService saService;
 
@@ -61,6 +64,7 @@ public class AppController {
         this.timeService = timeService;
         this.accountStatusService = accountStatusService;
         this.paymentService =  paymentService;
+        this.saService = saService;
     }
 
     public void start() {
@@ -91,16 +95,16 @@ public class AppController {
 
     public void showPage(String pageName) {
 
-        //refreshing? who want to refresh
-
         if (pageName.equals("sales") && salesPage != null) {
             salesPage.refresh();
         } else if (pageName.equals("orders") && ordersPage != null) {
             ordersPage.refresh();
         } else if (pageName.equals("stock") && stockPage != null) {
-            //stockPage.refresh();
+            stockPage.refresh();
         } else if (pageName.equals("customers") && customersPage != null) {
             customersPage.refresh();
+        } else if (pageName.equals("online") && onlineSalePage != null) {
+            onlineSalePage.refresh();
         }
 
         mainFrame.showPage(pageName);
@@ -140,15 +144,16 @@ public class AppController {
     }
 
     private void addMainPages() {
-
         dashboardPage = new Dashboard(this);
-        ordersPage = new OrdersPage(this, orderService, catalogueService);
+        ordersPage = new OrdersPage(this, orderService, catalogueService, new SAOrderService(saService));
         usersPage = new UsersPage(this);
         customersPage = new CustomersPage(this, customerService, paymentService);
         templatesPage = new TemplatesPage(this);
         stockPage = new StockPage(this, itemService);
         salesPage = new SalesPage(this, saleService, itemService);
         reportsPage = new ReportsPage(this);
+        onlineSalePage = new OnlineSalesPage(this, new OnlineSaleService());
+
         discountPlansPage = new DiscountPlansPage(this);
         settingsPage = new SettingsPanel(this, accountStatusService );
 
@@ -162,6 +167,7 @@ public class AppController {
         mainFrame.addPage("reports", reportsPage);
         mainFrame.addPage("discount", discountPlansPage);
         mainFrame.addPage("settings", settingsPage);
+        mainFrame.addPage("online", onlineSalePage);
     }
 
     public TemplateService getTemplateService() {

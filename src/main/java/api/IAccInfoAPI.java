@@ -32,14 +32,14 @@ public interface IAccInfoAPI {
 	 * 
 	 * @param userID
 	 */
-	String getOrderHistory(int userID);
+	Result getOrderHistory(int userID);
 
 	/**
 	 * 
 	 * @param orderID
 	 * @param status
 	 */
-	void updateOrderStatus(String orderID, String status);
+	Result updateOrderStatus(String orderID, String status);
 
 	/**
 	 * 
@@ -51,13 +51,13 @@ public interface IAccInfoAPI {
 	 * 
 	 * @param orderID
 	 */
-	String getInvoice(String orderID);
+	Result getInvoice(String orderID);
 
 	/**
 	 * 
 	 * @param userID
 	 */
-	List<String> listInvoices(int userID);
+	Result listInvoices(int userID);
 
 	Result sendCatalogue();
 

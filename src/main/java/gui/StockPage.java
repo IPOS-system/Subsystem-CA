@@ -342,4 +342,8 @@ public class StockPage extends JPanel {
         }
 
     }
+    public void refresh(){
+        updateTable();
+    }
+
 }

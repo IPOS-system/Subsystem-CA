@@ -1,6 +1,7 @@
 package api_impl;
 
 import api.ICatalogueAPI;
+import dao.OnlineOrderDAO;
 import domain.Item;
 
 import org.apache.xmlbeans.impl.xb.xsdschema.Public;
@@ -39,11 +40,15 @@ public class ISoldStockAPIController {
 
     @PostMapping("/sendorder")
     public void sendOrder(@RequestBody Map<String, Object> request) {
-        System.out.println("FULL BODY: " + request);
-        System.out.println("orderId: " + request.get("orderId"));
-        System.out.println("status: " + request.get("status"));
-        System.out.println("deliveryAddress: " + request.get("deliveryAddress"));
-        System.out.println("items: " + request.get("items"));
+        OnlineOrderDAO dao = new OnlineOrderDAO();
+
+        String orderId = request.get("orderId").toString();
+        String status = request.get("status").toString();
+        String deliveryAddress = request.get("deliveryAddress").toString();
+        List<Map<String, Object>> items = (List<Map<String, Object>>) request.get("items");
+
+        boolean ok = dao.saveOnlineOrder(orderId, status, deliveryAddress, items);
+        System.out.println("saved? " + ok);
     }
 
 }

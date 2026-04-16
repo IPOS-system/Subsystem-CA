@@ -16,16 +16,10 @@ public class ISoldStockAPIService implements ISoldStockAPI {
     }
     @Override
     public 	Result deductStock(String productID, int qty){
-        return itemService.checkStock(productID, qty);
+        return itemService.deductStock(productID, qty);
     }
 
     public Result sendOrder(){
          return Result.fail("FAIL");
     }
-
-
-
-
-
-
 }

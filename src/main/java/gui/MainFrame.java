@@ -18,7 +18,7 @@ public class MainFrame extends JFrame {
             ClassLoader cl = getClass().getClassLoader();
 
             URL bgUrl = cl.getResource("gradient.png");
-            URL logoUrl = cl.getResource("logo.png");
+            URL logoUrl = cl.getResource("cosymedlogo.png");
 
             if (bgUrl != null) {
                 backgroundImage = new ImageIcon(bgUrl).getImage();
@@ -42,7 +42,7 @@ public class MainFrame extends JFrame {
         add(mainPanel);
 
         setTitle("IPOS CA");
-        setSize(1000, 600);
+        setSize(1200, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setVisible(true);

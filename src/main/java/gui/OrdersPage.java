@@ -32,71 +32,36 @@ public class OrdersPage extends JPanel {
 
     JButton clearSearchBtn;
 
+    JButton refreshCatBtn;
+    JButton checkAccountStatusBtn;
+
+    JLabel saStatusLbl;
+    JLabel saStatusDot;
+
+    JButton ordersBtn;
+    JButton iposLogin;
+
+
+
     private final CatalogueService catalogueService;
     private final SaleService saleService;
     private final AppController appController;
+    private final SAOrderService saOrderService;
 
-    public OrdersPage(AppController appController, SaleService saleService, CatalogueService catalogueService) {
+    public OrdersPage(AppController appController, SaleService saleService, CatalogueService catalogueService, SAOrderService saOrderService) {
         this.appController = appController;
         this.saleService = saleService;
         this.catalogueService = catalogueService;
+        this.saOrderService = saOrderService;
 
         setLayout(new BorderLayout());
 
         add(new HeaderPanel(appController), BorderLayout.NORTH);
         add(new BottomPanel(appController), BorderLayout.SOUTH);
         add(makeCentrePanel(), BorderLayout.CENTER);
-
-
-
-
     }
 
-    private Result promptForSALogin(Component parent) {
-        while (true) {
-            JTextField usernameField = new JTextField(15);
-            JPasswordField passwordField = new JPasswordField(15);
 
-            usernameField.setText("cosymed");
-            passwordField.setText("cosymed_password");
-
-            JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
-            panel.add(new JLabel("SA Username:"));
-            panel.add(usernameField);
-            panel.add(new JLabel("SA Password:"));
-            panel.add(passwordField);
-
-            int result = JOptionPane.showConfirmDialog(
-                    parent,
-                    panel,
-                    "Login to SA",
-                    JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE
-            );
-
-            if (result != JOptionPane.OK_OPTION) {
-                return Result.fail("chose nothing. ");
-            }
-
-            String username = usernameField.getText().trim();
-            String password = new String(passwordField.getPassword());
-
-            if (username.isBlank() || password.isBlank()) {
-                JOptionPane.showMessageDialog(parent, "Enter username and password.");
-                continue;
-            }
-
-            Result connection=  saleService.connect(username, password);
-            if(connection.isSuccess()){
-               JOptionPane.showMessageDialog(parent, saleService.getAccountStatus().getMessage());
-                return Result.success("connected successfully to IPOS SA");
-            }
-
-            JOptionPane.showMessageDialog(parent, "Invalid username or password or IPOS SA is offline");
-
-
-        }
-    }
 
     private JPanel makeCentrePanel() {
         JPanel centre = new JPanel(new BorderLayout(10, 10));
@@ -104,7 +69,7 @@ public class OrdersPage extends JPanel {
         centre.setOpaque(false);
 
         basketModel = new DefaultTableModel(
-                new Object[]{"Item ID", "Description", "Qty", "Unit price", "Line total"}, 0) {
+                new Object[]{"Item ID", "Description", "Qty", "Unit price", "total"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
@@ -122,8 +87,10 @@ public class OrdersPage extends JPanel {
         searchPanel.add(searchBtn);
         searchPanel.add(clearSearchBtn);
 
+
+
         catalogueModel = new DefaultTableModel(
-                new Object[]{"Item ID", "Description", "Pack type", "Unit", "Units/Pack", "Pack cost"}, 0) {
+                new Object[]{"Item ID", "Description", "Pack type", "Unit", "Units/Pack", "Pack cost", "availability"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
@@ -135,7 +102,7 @@ public class OrdersPage extends JPanel {
         cataloguePanel.add(searchPanel, BorderLayout.NORTH);
         cataloguePanel.add(new JScrollPane(catalogueTable), BorderLayout.CENTER);
 
-        loadCatalogue();
+        //loadCatalogue();
 
         JSplitPane splitPane = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT,
@@ -157,17 +124,39 @@ public class OrdersPage extends JPanel {
         placeOrderBtn = new JButton("Place Order");
         clearBtn = new JButton("clear basket");
 
+        refreshCatBtn = new JButton("refresh catalogue");
 
+        ordersBtn = new JButton("Orders");
+        btnPanel.add(ordersBtn);
+
+        iposLogin = new JButton("Connect IPOS SA");
+        btnPanel.add(iposLogin);
+
+        checkAccountStatusBtn = new JButton("Account Status");
+        btnPanel.add(checkAccountStatusBtn);
+
+        btnPanel.add(refreshCatBtn);
         btnPanel.add(addItemBtn);
         btnPanel.add(removeItemBtn);
         btnPanel.add(placeOrderBtn);
         btnPanel.add(clearBtn);
+
+        JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        saStatusDot = new JLabel("●");
+        saStatusDot.setFont(saStatusDot.getFont().deriveFont(16f));
+        saStatusLbl = new JLabel("IPOS SA Status: Disconnected");
+
+        //statusPanel.add(saStatusDot);
+       //statusPanel.add(saStatusLbl);
+
+        bottom.add(statusPanel, BorderLayout.CENTER);
 
         bottom.add(totalLbl, BorderLayout.WEST);
         bottom.add(btnPanel, BorderLayout.EAST);
         centre.add(bottom, BorderLayout.SOUTH);
 
         hookEvents();
+        updateSAStatus();
 
         return centre;
     }
@@ -183,10 +172,24 @@ public class OrdersPage extends JPanel {
                     i.getPackageType(),
                     i.getUnit(),
                     i.getUnitsInPack(),
-                    i.getPackageCost()
+                    i.getPackageCost(),
+                    i.getQtyInStock()
             });
         }
     }
+    private void updateSAStatus() {
+        boolean connected = saleService.isConnectedtoSA();
+
+        if (connected) {
+            saStatusLbl.setText("IPOS SA Status: Connected");
+            saStatusDot.setForeground(Color.GREEN);
+        } else {
+            saStatusLbl.setText("IPOS SA Status: Disconnected");
+            saStatusDot.setForeground(Color.RED);
+        }
+    }
+
+
     private void filterCatalogue() {
         String text = searchField.getText().trim().toLowerCase();
 
@@ -205,7 +208,8 @@ public class OrdersPage extends JPanel {
                         i.getPackageType(),
                         i.getUnit(),
                         i.getUnitsInPack(),
-                        i.getPackageCost()
+                        i.getPackageCost(),
+                        i.getQtyInStock()
                 });
             }
         }
@@ -223,6 +227,44 @@ public class OrdersPage extends JPanel {
             loadCatalogue();
         });
         searchField.addActionListener(e -> filterCatalogue());
+        refreshCatBtn.addActionListener(e -> {onRefreshCatalogue();updateSAStatus();});
+        checkAccountStatusBtn.addActionListener(e -> {onCheckAccountStatus(); updateSAStatus();});
+        iposLogin.addActionListener(e -> {
+            saOrderService.login(this);
+            loadCatalogue();
+            updateSAStatus();
+        });
+        ordersBtn.addActionListener(e -> onShowOrderHistory());
+    }
+
+    private void onShowOrderHistory() {
+        saOrderService.showOrderHistory(this);
+    }
+
+
+    private void onCheckAccountStatus() {
+        updateSAStatus();
+        Result res = saOrderService.getAccountStatus();
+
+        JTextArea area = new JTextArea(res.getMessage());
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setPreferredSize(new Dimension(500, 300));
+
+        JOptionPane.showMessageDialog(this, scroll, "Account Status", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void onRefreshCatalogue() {
+        Result res = catalogueService.syncCatalogue();
+
+        if (!res.isSuccess()) {
+            JOptionPane.showMessageDialog(this, "SA unavailable. Showing cached catalogue.");
+        }
+
+        loadCatalogue();
     }
 
     private void updateBasketTable() {
@@ -284,6 +326,7 @@ public class OrdersPage extends JPanel {
         if (res.isSuccess()) {
             updateBasketTable();
             recalculateTotal();
+            loadCatalogue();
         }
     }
 
@@ -299,8 +342,11 @@ public class OrdersPage extends JPanel {
     }
 
     public void refresh() {
-        if(!saleService.isConnectedtoSA()){
-            JOptionPane.showMessageDialog(this, promptForSALogin(this ).getMessage());
+        if(!saOrderService.isConnectedToSA().isSuccess()){
+            JOptionPane.showMessageDialog(this, saOrderService.login(this ).getMessage());
+            //loadCatalogue();
+            updateSAStatus();
+
         }
     }
 }

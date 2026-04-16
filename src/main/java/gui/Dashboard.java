@@ -3,135 +3,111 @@ package gui;
 import service.AppController;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class Dashboard extends JPanel {
     Image backgroundImage;
 
     public Dashboard(AppController appController) {
-
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(12, 12));
+        setBorder(new EmptyBorder(12, 12, 12, 12));
 
         backgroundImage = appController.getBackground();
 
         add(new HeaderPanel(appController), BorderLayout.NORTH);
-       // add(new BottomPanel(appController), BorderLayout.SOUTH);
+        add(makeMainPanel(appController), BorderLayout.CENTER);
+        add(makeBottomArea(appController), BorderLayout.SOUTH);
+    }
 
-        // Main panel used for dashboard
-        JPanel mainPanel = new JPanel(new GridLayout(1, 3, 10, 10));
+    private JPanel makeMainPanel(AppController appController) {
+        JPanel mainPanel = new JPanel(new GridLayout(1, 3, 12, 12));
         mainPanel.setOpaque(false);
 
-        // Pharmacist Area
-        JPanel pharmacistPanel = new JPanel(new BorderLayout());
-        pharmacistPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Pharmacist"));
-        pharmacistPanel.setOpaque(false);
+        mainPanel.add(makeSection("Pharmacist",
+                new JButton[]{
+                        makeNavButton("Orders", "orders", appController),
+                        makeNavButton("Customers", "customers", appController),
+                        makeNavButton("Stock", "stock", appController),
+                        makeNavButton("Sales", "sales", appController)
+                }));
 
-        JPanel pharmacistButtons = new JPanel(new GridLayout(4, 1, 5, 5));
-        pharmacistButtons.setOpaque(false);
+        mainPanel.add(makeSection("Manager",
+                new JButton[]{
+                        makeNavButton("Templates", "templates", appController),
+                        makeNavButton("Reports", "reports", appController),
+                        makeNavButton("Online Sales", "online", appController)
+                }));
 
-        JButton ordersButton = new JButton("Orders");
-        JButton customersButton = new JButton("Customers");
-        JButton stockButton = new JButton("Stock");
-        JButton salesButton = new JButton("Sales");
+        mainPanel.add(makeSection("Administrator",
+                new JButton[]{
+                        makeNavButton("Users", "users", appController),
+                        makeNavButton("Settings", "settings", appController)
+                }));
 
-        pharmacistButtons.add(ordersButton);
-        pharmacistButtons.add(customersButton);
-        pharmacistButtons.add(stockButton);
-        pharmacistButtons.add(salesButton);
+        return mainPanel;
+    }
 
-        pharmacistPanel.add(pharmacistButtons, BorderLayout.NORTH);
+    private JPanel makeSection(String title, JButton[] buttons) {
+        JPanel section = new JPanel(new BorderLayout());
+        section.setOpaque(false);
+        section.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.BLACK, 2, true),
+                new EmptyBorder(10, 10, 10, 10)
+        ));
 
-        // Manager Area
-        JPanel managerPanel = new JPanel(new BorderLayout());
-        managerPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Manager"));
-        managerPanel.setOpaque(false);
+        JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 8, 8));
+        buttonPanel.setOpaque(false);
 
-        JPanel managerButtons = new JPanel(new GridLayout(2, 1, 5, 5));
-        managerButtons.setOpaque(false);
+        for (JButton button : buttons) {
+            buttonPanel.add(button);
+        }
 
-        JButton templatesButton = new JButton("Templates");
-        JButton reportsButton = new JButton("Reports");
+        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
+        titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 18f));
+        titleLabel.setBorder(new EmptyBorder(0, 0, 10, 0));
 
-        managerButtons.add(templatesButton);
-        managerButtons.add(reportsButton);
+        section.add(titleLabel, BorderLayout.NORTH);
+        section.add(buttonPanel, BorderLayout.CENTER);
 
-        managerPanel.add(managerButtons, BorderLayout.NORTH);
+        return section;
+    }
 
-        // Admin Area
-        JPanel adminPanel = new JPanel(new BorderLayout());
-        adminPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Administrator"));
-        adminPanel.setOpaque(false);
+    private JButton makeNavButton(String text, String page, AppController appController) {
+        JButton button = new JButton(text);
+        button.setFocusPainted(false);
+        button.setPreferredSize(new Dimension(160, 42));
+        button.addActionListener(e -> appController.showPage(page));
+        return button;
+    }
 
-        JPanel adminButtons = new JPanel(new GridLayout(1, 1, 5, 5));
-        adminButtons.setOpaque(false);
+    private JPanel makeBottomArea(AppController appController) {
+        JPanel wrapper = new JPanel(new BorderLayout(0, 8));
+        wrapper.setOpaque(false);
 
-        JButton usersButton = new JButton("Users");
-        adminButtons.add(usersButton);
-
-        JButton settingsButton = new JButton("Settings");
-        adminButtons.add(settingsButton);
-
-        adminPanel.add(adminButtons, BorderLayout.NORTH);
-
-        // Add columns
-        mainPanel.add(pharmacistPanel);
-        mainPanel.add(managerPanel);
-        mainPanel.add(adminPanel);
-        add(mainPanel, BorderLayout.CENTER);
-
-        // Local bottom panel to host alerts panel
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        add(bottomPanel, BorderLayout.SOUTH);
-        bottomPanel.add(new BottomPanel(appController));
-        bottomPanel.setOpaque(false);
-
-        // Alerts Area to show important alerts and information
         JPanel alertsPanel = new JPanel(new BorderLayout());
-        alertsPanel.setBorder(
-                BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK, 3, true), "Alerts"));
         alertsPanel.setOpaque(false);
-        alertsPanel.setLayout(new BorderLayout());
         alertsPanel.setPreferredSize(new Dimension(0, 120));
-        bottomPanel.add(alertsPanel, BorderLayout.NORTH);
+        alertsPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.BLACK, 2, true),
+                new EmptyBorder(8, 8, 8, 8)
+        ));
 
-        //Bind panels to buttons
-        ordersButton.addActionListener(e -> {
-            appController.showPage("orders");
-        });
+        JLabel alertsLabel = new JLabel("Alerts");
+        alertsLabel.setFont(alertsLabel.getFont().deriveFont(Font.BOLD, 16f));
+        alertsPanel.add(alertsLabel, BorderLayout.NORTH);
 
-        customersButton.addActionListener(e -> {
-            appController.showPage("customers");
-        });
+        wrapper.add(alertsPanel, BorderLayout.CENTER);
+        wrapper.add(new BottomPanel(appController), BorderLayout.SOUTH);
 
-        stockButton.addActionListener(e -> {
-            appController.showPage("stock");
-        });
-
-        salesButton.addActionListener(e -> {
-            appController.showPage("sales");
-        });
-
-        templatesButton.addActionListener(e -> {
-            appController.showPage("templates");
-        });
-
-        reportsButton.addActionListener(e -> {
-            appController.showPage("reports");
-        });
-
-        usersButton.addActionListener(e -> {
-            appController.showPage("users");
-        });
-        settingsButton.addActionListener(e ->
-                appController.showPage("settings"));
+        return wrapper;
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if(backgroundImage != null) {
+        if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
     }
-
 }

@@ -14,10 +14,7 @@ import org.junit.runners.Suite;
         ISoldStockAPITest.class,
         IAccInfoAPISystemTest.class,
 
-//        ResultTest.class,
-//        DiscountPlanServiceTest.class,
-//        ReminderServiceTest.class,
-//        DebtServiceTest.class
+
 })
 public class RootSuite {
 }

@@ -3,10 +3,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import static org.junit.Assert.*;
 
-// Tests for the Item class.
-// This checks that the constructor, getters, setters
-// and toString method all work properly.
-
+// Tests Item class for constructor, getters, setters, and toString
 public class ItemTest {
 
     // helper method to create a sample item for the tests

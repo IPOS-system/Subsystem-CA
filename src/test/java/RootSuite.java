@@ -8,7 +8,9 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         //SaleItemTest.class,
         //ItemTest.class,
+        ItemTest.class,
 
+        
         ISoldStockAPITest.class,
         IAccInfoAPISystemTest.class,
 

@@ -10,7 +10,7 @@ import org.junit.runners.Suite;
         //ItemTest.class,
         ItemTest.class,
 
-        
+
         ISoldStockAPITest.class,
         IAccInfoAPISystemTest.class,
 

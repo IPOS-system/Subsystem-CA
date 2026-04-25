@@ -25,8 +25,8 @@ public class LoginPage extends JPanel {
 
 
         //TODO remove for real demo, this only for debug
-        userField.setText("sysdba");
-        passField.setText("masterkey");
+        userField.setText("fullAccess");
+        passField.setText("fullAccess");
 
 
         loginBtn = new JButton("Login");

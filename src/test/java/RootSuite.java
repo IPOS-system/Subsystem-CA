@@ -5,15 +5,12 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 
-    // Riya test cases
     SaleItemTest.class,
     ItemTest.class,
 
-    // Rishi test cases
     ISoldStockAPITest.class,
     IAccInfoAPISystemTest.class,
 
-    // Finn test cases
     ICatalogueAPITest.class,
     IPaymentAPITest.class
 

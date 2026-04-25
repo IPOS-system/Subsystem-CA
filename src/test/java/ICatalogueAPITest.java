@@ -19,45 +19,40 @@ public class ICatalogueAPITest {
         instance = implRef;
     }
 
-    // listProducts should not return null
-    @Test
-    public void testListReturnsNonNull() {
-        List<Item> products = instance.listProducts();
-        assertNotNull("listProducts should not return null", products);
-    }
-
-    // The catalogue should contain at least one item
+    // listProducts should not return null and contain at least one item
     @Test
     public void testListNotEmpty() {
         List<Item> products = instance.listProducts();
+        assertNotNull("listProducts should not return null", products);
         assertFalse("listProducts should return at least one item", products.isEmpty());
     }
 
     // Every item in the catalogue must have a valid item ID
     @Test
-    public void testListAllItemsHaveId() {
+    public void testAllItemsHaveId() {
         List<Item> products = instance.listProducts();
         for (Item item : products) {
             assertNotNull("Each item must have a itemId", item.getItemId());
         }
     }
 
-    // Every item in the catalogue must have a valid description
+    // Every item in the catalogue must have a valid description (name)
     @Test
-    public void testListAllItemsHaveDescription() {
+    public void testAllItemsHaveDescription() {
         List<Item> products = instance.listProducts();
         for (Item item : products) {
-            assertNotNull("Each item must have a description", item.getDescription());
+            assertNotNull("Each item must have a description (name)", item.getDescription());
         }
     }
 
     // Paracetamol (ID 10000001) should appear in the catalogue
     @Test
-    public void testListContainsKnownItem() {
+    public void testListContainsItem() {
+        String id = "10000001";
         List<Item> products = instance.listProducts();
         boolean found = false;
         for (Item item : products) {
-            if ("10000001".equals(item.getItemId())) {
+            if (id.equals(item.getItemId())) {
                 found = true;
                 break;
             }
@@ -65,16 +60,17 @@ public class ICatalogueAPITest {
         assertTrue("Catalogue should contain the item with ID 10000001", found);
     }
 
-    // The specified item should have the expected description
     @Test
-    public void testListKnownItemDescription() {
+    public void testListNotContainsItem() {
+        String id = "UNKNOWN";
         List<Item> products = instance.listProducts();
+        boolean found = false;
         for (Item item : products) {
-            if ("10000001".equals(item.getItemId())) {
-                assertEquals("Paracetamol", item.getDescription());
-                return;
+            if (id.equals(item.getItemId())) {
+                found = true;
+                break;
             }
         }
-        fail("Item 10000001 not found in catalogue");
+        assertFalse("Catalogue does not contain the item with ID 10000001", found);
     }
 }

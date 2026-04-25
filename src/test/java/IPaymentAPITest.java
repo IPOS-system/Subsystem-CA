@@ -46,15 +46,4 @@ public class IPaymentAPITest {
         // Result result = instance.Pay(payment);
         // assertFalse(result.isSuccess());
     }
-
-    @Test
-    public void testPayServiceOffline() {
-        System.out.println("\nTest Plan: Pay when payment service is unreachable");
-        System.out.println("Expected: Result.isSuccess() == false");
-
-        // IPaymentAPIService offline = new IPaymentAPIService(); // Using wrong port
-        // Payment payment = new Payment("3", 10.00, "visa", "12/26", "name", "`1234123412341234", "984");
-        // Result result = offline.Pay(payment);
-        // assertFalse(result.isSuccess());
-    }
 }
